@@ -1,0 +1,12 @@
+name: Feature Request
+title: "[FEATURE] "
+labels: ["enhancement"]
+
+body:
+  - type: textarea
+    attributes:
+      label: Özellik açıklaması
+
+  - type: textarea
+    attributes:
+      label: Neden gerekli?
