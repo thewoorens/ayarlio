@@ -4,7 +4,7 @@ import logger from "./logger";
 const isProduction = process.env.NODE_ENV === "production";
 
 const MONGODB_URI = isProduction
-  ? process.env.MONGODB_SRV_URI!
+  ? process.env.MONGODB_SRV_MONGODB_URI!
   : process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
@@ -29,8 +29,14 @@ async function connectDB() {
       bufferCommands: false,
     };
 
+    let uri = MONGODB_URI.trim();
+
+    if (uri.startsWith("mongodb+srv://")) {
+      uri = uri.replace(/:\d+(?=@)/, "");
+    }
+
     cached.promise = mongoose
-      .connect(MONGODB_URI, opts)
+      .connect(uri, opts)
       .then((mongoose) => {
         logger.info(
           `Connected to MongoDB successfully (${isProduction ? "SRV" : "Standard"})`,
