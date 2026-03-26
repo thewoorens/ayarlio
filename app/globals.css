@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.js";
+
+
+@source "../node_modules/@heroui/theme/dist/";
