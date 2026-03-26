@@ -4,7 +4,7 @@ import logger from "./logger";
 const isProduction = process.env.NODE_ENV === "production";
 
 const MONGODB_URI = isProduction
-  ? process.env.MONGODB_SRV_URI!
+  ? process.env.MONGODB_SRV_MONGODB_URI!
   : process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
