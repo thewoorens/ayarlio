@@ -29,8 +29,14 @@ async function connectDB() {
       bufferCommands: false,
     };
 
+    let uri = MONGODB_URI.trim();
+
+    if (uri.startsWith("mongodb+srv://")) {
+      uri = uri.replace(/:\d+(?=@)/, "");
+    }
+
     cached.promise = mongoose
-      .connect(MONGODB_URI, opts)
+      .connect(uri, opts)
       .then((mongoose) => {
         logger.info(
           `Connected to MongoDB successfully (${isProduction ? "SRV" : "Standard"})`,
