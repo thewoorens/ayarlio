@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardBody, Chip, Tooltip } from "@heroui/react";
+import { Card, CardBody } from "@heroui/react";
+import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
 
 interface StatsCardProps {
@@ -8,6 +9,7 @@ interface StatsCardProps {
   value: string;
   icon: ReactNode;
   accent: string;
+  url?: string;
   subtitle?: string;
 }
 
@@ -16,12 +18,22 @@ export function StatsCard({
   value,
   icon,
   accent,
+  url,
   subtitle = "/ aylık",
 }: StatsCardProps) {
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (url) {
+      router.push(url);
+    }
+  };
+
   return (
     <Card
+      onPress={handlePress}
       shadow="none"
-      isPressable
+      isPressable={!!url}
       disableRipple
       className="relative overflow-hidden border border-[#e8eaf0] bg-white transition-transform duration-200 hover:-translate-y-0.5"
       style={{ borderRadius: 16 }}

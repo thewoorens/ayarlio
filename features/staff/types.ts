@@ -5,7 +5,6 @@ export interface Staff {
   name: string;
   role: string;
   avatar?: string;
-  color: string;
   phone: string;
   email: string;
   workDays: string[];
@@ -14,8 +13,6 @@ export interface Staff {
   status: "active" | "leave" | "inactive";
   appointments?: number;
   rating?: number;
-  revenue?: string;
-  joinDate?: string;
 }
 
 export interface ApiListResponse<T> {
@@ -50,7 +47,6 @@ export const EMPTY_STAFF: Omit<Staff, "_id"> = {
   role: "",
   email: "",
   phone: "",
-  color: "#3b82f6",
   status: "active",
   startTime: "09:00",
   endTime: "18:00",

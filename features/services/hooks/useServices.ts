@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
-import { useDisclosure } from "@heroui/react";
+
+import { useState, useMemo } from "react";
+import { useDisclosure, addToast } from "@heroui/react";
 import useSWR from "swr";
 import {
   Service,
@@ -10,75 +11,83 @@ import {
   CategoryForm,
   DeleteTarget,
   EMPTY_SERVICE_FORM,
-  CATEGORY_COLOR,
 } from "../types";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+async function apiRequest(url: string, options?: RequestInit) {
+  const res = await fetch(url, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error?.message || "API error");
+  }
+
+  return res.json();
+}
+
 export function useServices() {
-  // ── Data fetching ──────────────────────────────────────────────
   const {
-    data: response,
+    data: svcRes,
     mutate: mutateSvc,
     isLoading,
   } = useSWR("/api/tenant/services", fetcher);
-  const services: Service[] = response?.data || [];
 
-  const {
-    data: catResponse,
-    mutate: mutateCat,
-    isLoading: isCatLoading,
-  } = useSWR("/api/tenant/services/categories", fetcher);
-  const cats: Category[] = catResponse?.data || [];
-
-  const { data: staffResponse, isLoading: isStaffLoading } = useSWR(
-    "/api/tenant/staff",
-    fetcher
+  const { data: catRes, mutate: mutateCat } = useSWR(
+    "/api/tenant/services/categories",
+    fetcher,
   );
-  const staffList: Staff[] = staffResponse?.data || [];
 
-  // ── Filters ────────────────────────────────────────────────────
+  const { data: staffRes } = useSWR("/api/tenant/staff", fetcher);
+
+  const services: Service[] = svcRes?.data || [];
+  const cats: Category[] = catRes?.data || [];
+  const staffList: Staff[] = staffRes?.data || [];
+
   const [catFilter, setCatFilter] = useState("Tümü");
   const [search, setSearch] = useState("");
 
-  const filtered = services.filter((s) => {
-    const mc = catFilter === "Tümü" || s.category === catFilter;
-    const ms = (s.name || "").toLowerCase().includes(search.toLowerCase());
-    return mc && ms;
-  });
+  const filtered = useMemo(() => {
+    return services.filter((s) => {
+      const matchCat = catFilter === "Tümü" || s.category === catFilter;
+      const matchSearch = s.name?.toLowerCase().includes(search.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [services, catFilter, search]);
 
-  // ── Multi-select ───────────────────────────────────────────────
   const [checkedSvc, setCheckedSvc] = useState<Set<string>>(new Set());
 
   const allSvcChecked =
     filtered.length > 0 && filtered.every((s) => checkedSvc.has(s._id));
 
   function toggleSvcCheck(id: string) {
-    setCheckedSvc((p) => {
-      const n = new Set(p);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+    setCheckedSvc((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
     });
   }
 
   function toggleAllSvc() {
     setCheckedSvc(
-      allSvcChecked ? new Set() : new Set(filtered.map((s) => s._id))
+      allSvcChecked ? new Set() : new Set(filtered.map((s) => s._id)),
     );
   }
 
-  // ── Category hover ─────────────────────────────────────────────
-  const [hoveredCatId, setHoveredCatId] = useState<string | null>(null);
-
-  // ── Service modal ──────────────────────────────────────────────
   const svcDisc = useDisclosure();
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<ServiceForm>({ ...EMPTY_SERVICE_FORM });
+  const [form, setForm] = useState<ServiceForm>(EMPTY_SERVICE_FORM);
   const [isSaving, setIsSaving] = useState(false);
 
   function openAdd() {
     setEditId(null);
-    setForm({ ...EMPTY_SERVICE_FORM, category: cats[0]?.name ?? "" });
+    setForm({
+      ...EMPTY_SERVICE_FORM,
+      category: cats[0]?.name ?? "",
+    });
     svcDisc.onOpen();
   }
 
@@ -92,19 +101,19 @@ export function useServices() {
       description: s.description || "",
       staffIds: [...(s.staffIds || [])],
       isActive: s.isActive,
-      color: s.color || "#3b82f6",
     });
     svcDisc.onOpen();
   }
 
   async function saveSvc() {
     if (!form.name.trim()) return;
+
     setIsSaving(true);
 
     const payload = {
       name: form.name,
       category: form.category,
-      duration: { value: form.duration.value, unit: "minutes" },
+      duration: { value: form.duration.value, unit: form.duration.unit },
       price: form.price,
       description: form.description,
       isActive: form.isActive,
@@ -112,59 +121,108 @@ export function useServices() {
     };
 
     try {
-      if (editId !== null) {
-        await fetch(`/api/tenant/services/${editId}`, {
+      if (editId) {
+        await apiRequest(`/api/tenant/services/${editId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+        });
+        addToast({
+          title: "Başarılı",
+          description: "Hizmet başarıyla güncellendi.",
+          color: "success",
         });
       } else {
-        await fetch("/api/tenant/services", {
+        await apiRequest("/api/tenant/services", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        addToast({
+          title: "Başarılı",
+          description: "Yeni hizmet başarıyla eklendi.",
+          color: "success",
+        });
       }
-      mutateSvc();
+
+      await mutateSvc();
       svcDisc.onClose();
-    } catch (err) {
-      console.error("Failed to save service", err);
+    } catch (err: any) {
+      addToast({
+        title: "Hata",
+        description: err.message || "Bir hata oluştu",
+        color: "danger",
+      });
     } finally {
       setIsSaving(false);
     }
   }
 
-  function toggleStaff(stId: string) {
+  function toggleStaff(id: string) {
     setForm((p) => ({
       ...p,
-      staffIds: p.staffIds.includes(stId)
-        ? p.staffIds.filter((x) => x !== stId)
-        : [...p.staffIds, stId],
+      staffIds: p.staffIds.includes(id)
+        ? p.staffIds.filter((x) => x !== id)
+        : [...p.staffIds, id],
     }));
   }
 
-  // ── Category modal ─────────────────────────────────────────────
   const catDisc = useDisclosure();
   const [catForm, setCatForm] = useState<CategoryForm>({ name: "" });
+  const [isCatSaving, setIsCatSaving] = useState(false);
 
   async function saveCat() {
-    if (!catForm.name.trim() || cats.find((c) => c.name === catForm.name))
-      return;
-    try {
-      await fetch("/api/tenant/services/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: catForm.name.trim(), color: CATEGORY_COLOR }),
+    const name = catForm.name.trim();
+
+    if (!name) {
+      addToast({
+        title: "Hata",
+        description: "Kategori adı boş olamaz",
+        color: "danger",
       });
-      mutateCat();
-    } catch (err) {
-      console.error("Failed to add category", err);
+      return;
     }
-    setCatForm({ name: "" });
-    catDisc.onClose();
+
+    const exists = cats.some(
+      (c) => c.name.toLowerCase() === name.toLowerCase(),
+    );
+
+    if (exists) {
+      addToast({
+        title: "Hata",
+        description: "Bu kategori zaten mevcut",
+        color: "danger",
+      });
+      return;
+    }
+
+    setIsCatSaving(true);
+
+    try {
+      await apiRequest("/api/tenant/services/categories", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+        }),
+      });
+
+      await mutateCat();
+      catDisc.onClose();
+      setCatForm({ name: "" });
+      addToast({
+        title: "Başarılı",
+        description: "Kategori başarıyla eklendi.",
+        color: "success",
+      });
+    } catch (err: any) {
+      addToast({
+        title: "Hata",
+        description: err.message || "Kategori eklenirken hata oluştu",
+        color: "danger",
+      });
+    } finally {
+      setIsCatSaving(false);
+    }
   }
 
-  // ── Delete modal ───────────────────────────────────────────────
   const delDisc = useDisclosure();
   const [delTarget, setDelTarget] = useState<DeleteTarget>({
     type: "svc",
@@ -177,62 +235,88 @@ export function useServices() {
   }
 
   async function confirmDel() {
-    if (delTarget.type === "svc") {
-      for (const id of delTarget.ids) {
-        await fetch(`/api/tenant/services/${id}`, { method: "DELETE" });
-      }
-      setCheckedSvc(new Set());
-      mutateSvc();
-    } else {
-      for (const id of delTarget.ids) {
-        await fetch(`/api/tenant/services/categories/${id}`, {
-          method: "DELETE",
+    try {
+      if (delTarget.type === "svc") {
+        await Promise.all(
+          delTarget.ids.map((id) =>
+            apiRequest(`/api/tenant/services/${id}`, {
+              method: "DELETE",
+            }),
+          ),
+        );
+
+        setCheckedSvc(new Set());
+        await mutateSvc();
+        addToast({
+          title: "Başarılı",
+          description: "Hizmet başarıyla silindi.",
+          color: "success",
+        });
+      } else {
+        await Promise.all(
+          delTarget.ids.map((id) =>
+            apiRequest(`/api/tenant/services/categories/${id}`, {
+              method: "DELETE",
+            }),
+          ),
+        );
+
+        await mutateCat();
+        await mutateSvc();
+
+        const deletedCats = cats
+          .filter((c) => delTarget.ids.includes(c._id))
+          .map((c) => c.name);
+
+        if (deletedCats.includes(catFilter)) setCatFilter("Tümü");
+        
+        addToast({
+          title: "Başarılı",
+          description: "Kategori başarıyla silindi.",
+          color: "success",
         });
       }
-      mutateCat();
-      mutateSvc();
-
-      const names = cats
-        .filter((c) => delTarget.ids.includes(c._id))
-        .map((c) => c.name);
-      if (names.includes(catFilter)) setCatFilter("Tümü");
+    } catch (err: any) {
+      addToast({
+        title: "Hata",
+        description: err.message || "Silme işlemi sırasında hata oluştu",
+        color: "danger",
+      });
+    } finally {
+      delDisc.onClose();
     }
-    delDisc.onClose();
   }
 
-  // ── Delete label (used in DeleteModal) ────────────────────────
-  const delLabel =
-    delTarget.type === "svc"
-      ? delTarget.ids.length === 1
-        ? `"${services.find((s) => s._id === delTarget.ids[0])?.name}" hizmeti`
-        : `${delTarget.ids.length} hizmet`
-      : delTarget.ids.length === 1
-      ? `"${cats.find((c) => c._id === delTarget.ids[0])?.name}" kategorisi`
-      : `${delTarget.ids.length} kategori`;
+  const delLabel = useMemo(() => {
+    if (delTarget.type === "svc") {
+      if (delTarget.ids.length === 1) {
+        const s = services.find((x) => x._id === delTarget.ids[0]);
+        return `"${s?.name}" hizmeti`;
+      }
+      return `${delTarget.ids.length} hizmet`;
+    } else {
+      if (delTarget.ids.length === 1) {
+        const c = cats.find((x) => x._id === delTarget.ids[0]);
+        return `"${c?.name}" kategorisi`;
+      }
+      return `${delTarget.ids.length} kategori`;
+    }
+  }, [delTarget, services, cats]);
 
   return {
-    // data
     services,
     cats,
     staffList,
     filtered,
     isLoading,
-    isCatLoading,
-    isStaffLoading,
-    // filters
     catFilter,
     setCatFilter,
     search,
     setSearch,
-    // multi-select
     checkedSvc,
     allSvcChecked,
     toggleSvcCheck,
     toggleAllSvc,
-    // category hover
-    hoveredCatId,
-    setHoveredCatId,
-    // service modal
     svcDisc,
     editId,
     form,
@@ -242,14 +326,12 @@ export function useServices() {
     openEdit,
     saveSvc,
     toggleStaff,
-    // category modal
     catDisc,
     catForm,
     setCatForm,
     saveCat,
-    // delete modal
+    isCatSaving,
     delDisc,
-    delTarget,
     delLabel,
     askDel,
     confirmDel,

@@ -1,15 +1,13 @@
 "use client";
-import { Button } from "@heroui/react";
-import { Checkbox } from "@heroui/react";
-import { Trash2 } from "lucide-react";
+
+import { Button, Checkbox, Spinner } from "@heroui/react";
+import { Trash2, Plus } from "lucide-react";
 import { useServices } from "./hooks/useServices";
 import { FilterBar } from "./components/FilterBar";
 import { ServiceCard } from "./components/ServiceCard";
 import { ServiceModal } from "./modals/ServiceModal";
 import { CategoryModal } from "./modals/CategoryModal";
 import { DeleteModal } from "./modals/DeleteModal";
-
-const F = "Arial, sans-serif";
 
 export default function ServicesView() {
   const {
@@ -26,8 +24,6 @@ export default function ServicesView() {
     allSvcChecked,
     toggleSvcCheck,
     toggleAllSvc,
-    hoveredCatId,
-    setHoveredCatId,
     svcDisc,
     editId,
     form,
@@ -46,156 +42,141 @@ export default function ServicesView() {
     askDel,
     confirmDel,
   } = useServices();
-
+  const activeCount = services.filter((s) => s.isActive).length;
   return (
-    <div style={{ padding: 24, fontFamily: F }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 20,
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: "#111827",
-              letterSpacing: "-0.03em",
-              margin: 0,
-            }}
-          >
-            Hizmetler
-          </h1>
-          <p style={{ fontSize: 13, color: "#9ca3af", margin: "2px 0 0" }}>
-            {isLoading
-              ? "Yükleniyor..."
-              : `${services.length} hizmet · ${services.filter((s) => s.isActive).length} aktif`}
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {checkedSvc.size > 0 && (
-            <Button
-              color="danger"
-              variant="flat"
-              startContent={<Trash2 size={14} />}
-              onPress={() => askDel("svc", [...checkedSvc])}
-            >
-              {checkedSvc.size} Hizmeti Sil
-            </Button>
-          )}
-          <Button
-            onPress={openAdd}
-            style={{
-              background: "linear-gradient(135deg,#3b82f6,#2563eb)",
-              boxShadow: "0 2px 12px rgba(59,130,246,0.3)",
-              fontWeight: 600,
-              color: "#fff",
-            }}
-          >
-            Hizmet Ekle
-          </Button>
-        </div>
-      </div>
-
-      {/* Filter bar */}
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        catFilter={catFilter}
-        onCatFilterChange={setCatFilter}
-        cats={cats}
-        hoveredCatId={hoveredCatId}
-        onCatHover={setHoveredCatId}
-        onDeleteCat={(id) => askDel("cat", [id])}
-        onOpenCatModal={catDisc.onOpen}
-      />
-
-      {/* Select all */}
-      {filtered.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 12,
-          }}
-        >
-          <Checkbox
-            isSelected={allSvcChecked}
-            onValueChange={toggleAllSvc}
-            size="sm"
-          />
-          <span style={{ fontSize: 11, color: "#9ca3af" }}>
-            {checkedSvc.size > 0
-              ? `${checkedSvc.size} hizmet seçili`
-              : "Tüm hizmetleri seç"}
-          </span>
-        </div>
-      )}
-
-      {/* Services Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))",
-          gap: 14,
-        }}
-      >
+    <div>
+      <div>
         {isLoading && (
-          <p style={{ fontSize: 14, color: "#6b7280" }}>
-            Hizmetler yükleniyor...
-          </p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
+            <Spinner />
+            <span className="text-sm">Hizmetler yükleniyor...</span>
+          </div>
         )}
-        {!isLoading && filtered.length === 0 && (
-          <p style={{ fontSize: 14, color: "#6b7280" }}>
-            Henüz hizmet bulunamadı.
-          </p>
-        )}
-        {filtered.map((s) => (
-          <ServiceCard
-            key={s._id}
-            service={s}
+      </div>
+      {!isLoading && (
+        <div className="p-6 space-y-6">
+          <div
+            className="flex flex-wrap items-start justify-between gap-4 bg-white rounded-xl p-5"
+            style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+          >
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Hizmetler</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                {isLoading
+                  ? "Yükleniyor..."
+                  : `${services.length} hizmet · ${activeCount} aktif`}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {checkedSvc.size > 0 && (
+                <Button
+                  radius="lg"
+                  startContent={<Trash2 size={14} />}
+                  color="danger"
+                  variant="solid"
+                  onPress={() => askDel("svc", [...checkedSvc])}
+                >
+                  {checkedSvc.size} seçiliyi sil
+                </Button>
+              )}
+
+              <Button
+                radius="lg"
+                startContent={<Plus size={14} />}
+                color="primary"
+                variant="solid"
+                onPress={openAdd}
+              >
+                Hizmet Ekle
+              </Button>
+            </div>
+          </div>
+
+          <div
+            className="flex flex-col gap-5 bg-white rounded-xl p-5"
+            style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+          >
+            <FilterBar
+              search={search}
+              onSearchChange={setSearch}
+              catFilter={catFilter}
+              onCatFilterChange={setCatFilter}
+              cats={cats}
+              onDeleteCat={(id) => askDel("cat", [id])}
+              onOpenCatModal={catDisc.onOpen}
+            />
+
+            {filtered.length > 0 && (
+              <div className="flex items-center text-xs text-gray-500">
+                <Checkbox
+                  isSelected={allSvcChecked}
+                  onValueChange={toggleAllSvc}
+                  size="sm"
+                />
+                <span>
+                  {checkedSvc.size > 0
+                    ? `${checkedSvc.size} hizmet seçili`
+                    : "Tüm hizmetleri seç"}
+                </span>
+              </div>
+            )}
+
+            <div className="min-h-50">
+              {!isLoading && filtered.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400 text-sm">
+                  Hizmet bulunamadı
+                </div>
+              )}
+
+              {!isLoading && filtered.length > 0 && (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((s) => (
+                    <ServiceCard
+                      key={s._id}
+                      service={s}
+                      cats={cats}
+                      staffList={staffList}
+                      isChecked={checkedSvc.has(s._id)}
+                      onToggleCheck={toggleSvcCheck}
+                      onEdit={openEdit}
+                      onDelete={(id) => askDel("svc", [id])}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <ServiceModal
+            isOpen={svcDisc.isOpen}
+            onClose={svcDisc.onClose}
+            editId={editId}
+            form={form}
+            setForm={setForm}
+            isSaving={isSaving}
             cats={cats}
             staffList={staffList}
-            isChecked={checkedSvc.has(s._id)}
-            onToggleCheck={toggleSvcCheck}
-            onEdit={openEdit}
+            onSave={saveSvc}
             onDelete={(id) => askDel("svc", [id])}
+            toggleStaff={toggleStaff}
           />
-        ))}
-      </div>
 
-      {/* Modals */}
-      <ServiceModal
-        isOpen={svcDisc.isOpen}
-        onClose={svcDisc.onClose}
-        editId={editId}
-        form={form}
-        setForm={setForm}
-        isSaving={isSaving}
-        cats={cats}
-        staffList={staffList}
-        onSave={saveSvc}
-        onDelete={(id) => askDel("svc", [id])}
-        toggleStaff={toggleStaff}
-      />
-      <CategoryModal
-        isOpen={catDisc.isOpen}
-        onClose={catDisc.onClose}
-        catForm={catForm}
-        setCatForm={setCatForm}
-        onSave={saveCat}
-      />
-      <DeleteModal
-        isOpen={delDisc.isOpen}
-        onClose={delDisc.onClose}
-        delLabel={delLabel}
-        onConfirm={confirmDel}
-      />
+          <CategoryModal
+            isOpen={catDisc.isOpen}
+            onClose={catDisc.onClose}
+            catForm={catForm}
+            setCatForm={setCatForm}
+            onSave={saveCat}
+          />
+
+          <DeleteModal
+            isOpen={delDisc.isOpen}
+            onClose={delDisc.onClose}
+            delLabel={delLabel}
+            onConfirm={confirmDel}
+          />
+        </div>
+      )}
     </div>
   );
 }

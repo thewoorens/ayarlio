@@ -25,7 +25,6 @@ export async function GET(req: NextRequest) {
 
         await connectDB();
 
-        // Get search params for pagination, filtering, etc.
         const { searchParams } = new URL(req.url);
         const isActiveParam = searchParams.get('isActive');
 

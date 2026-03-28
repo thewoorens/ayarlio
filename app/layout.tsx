@@ -2,10 +2,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { HeroProvider } from "./providers/hero-provider";
 import { isMobileUserAgent } from "@/lib/device";
 import { DeviceProvider } from "./providers/device-provider";
 import { headers } from "next/headers";
+import { HeroProvider } from "./providers/hero-provider";
 
 const inter = Inter({
   subsets: ["latin"],

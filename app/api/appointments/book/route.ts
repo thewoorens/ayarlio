@@ -3,7 +3,6 @@ import connectDB from "@/lib/db";
 import Appointment from "@/models/Appointment";
 import Customer from "@/models/Customer";
 import Tenant from "@/models/Tenant";
-import Notification from "@/models/Notification";
 import { sendEmail } from "@/lib/resend";
 import { appointmentConfirmationTemplate } from "@/lib/email-templates";
 import Staff from "@/models/Staff";
@@ -132,18 +131,6 @@ export async function POST(req: NextRequest) {
     });
 
     await appointment.save();
-
-    const notif = new Notification({
-      tenantId,
-      type: "in-app",
-      status: "pending",
-      subject: "Yeni Randevu Talebi",
-      content: `${customer.firstName} ${customer.lastName} tarafından ${start.toLocaleDateString("tr-TR")} ${start.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })} tarihi için yeni bir randevu oluşturuldu.`,
-      metadata: {
-        appointmentId: appointment._id,
-      },
-    });
-    await notif.save();
 
     const staffName = Staff.findById(staffId).then((staff) =>
       staff ? staff.name : "Seçilen Personel",

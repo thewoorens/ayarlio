@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Album,
   CalendarFold,
-  ChartLine,
   LayoutDashboard,
   Settings,
   User2,
@@ -38,9 +37,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const navigation = [
   {
     group: "Genel Bakış",
-    items: [
-      { label: "Pano", href: "/pano", icon: LayoutDashboard }
-    ],
+    items: [{ label: "Pano", href: "/pano", icon: LayoutDashboard }],
   },
   {
     group: "Randevular",
@@ -161,10 +158,11 @@ export default function Sidebar({
                   <Link key={item.href} href={item.href}>
                     <div
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group
-                      ${isActive
+                      ${
+                        isActive
                           ? "bg-blue-50 text-blue-600"
                           : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                        }`}
+                      }`}
                     >
                       <Icon
                         size={17}
@@ -176,19 +174,20 @@ export default function Sidebar({
                       />
 
                       <span
-                        className={`flex-1 text-[13px] ${isActive ? "font-semibold" : "font-medium"
-                          }`}
+                        className={`flex-1 text-[13px] ${
+                          isActive ? "font-semibold" : "font-medium"
+                        }`}
                       >
                         {item.label}
                       </span>
 
-                      {item.badge === "appointments_count" &&
-                        appointmentsCount &&
-                        appointmentsCount > 0 && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-100 text-red-500">
-                            {appointmentsCount}
-                          </span>
-                        )}
+                      {appointmentsCount &&
+                      item.badge === "appointments_count" &&
+                      appointmentsCount > 0 ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-100 text-red-500">
+                          {appointmentsCount}
+                        </span>
+                      ) : null}
                     </div>
                   </Link>
                 );

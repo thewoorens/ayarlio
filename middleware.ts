@@ -6,25 +6,7 @@ const authPages = ["/giris-yap", "/kayit-ol", "/parola-sifirla", "/e-posta-dogru
 export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
-    // Subdomain Algılama (Örn: slug.localhost:3000 -> tenant=slug)
-    const hostname = req.headers.get("host") || "";
-    // Vercel gibi ortamlarda x-forwarded-host veya kendi domain yapınıza göre güncelleyebilirsiniz.
-    // Şimdilik .localhost veya kendi domain'iniz (örneğin ayarl.io) için basit bir kontrol:
-    const isLocalhost = hostname.includes("localhost");
-    const baseDomain = isLocalhost ? "localhost:3000" : "ayarlio.com"; // TODO: prod domainini buraya girin
-
-    // Eğer port içeriyorsa (localhost:3000 gibi) başını alıyoruz
-    const hostWithoutPort = hostname.split(':')[0];
-    const baseDomainWithoutPort = baseDomain.split(':')[0];
-
-    if (hostname !== baseDomain && hostname !== `www.${baseDomain}` && hostname !== hostWithoutPort && hostWithoutPort !== baseDomainWithoutPort && hostWithoutPort !== `www.${baseDomainWithoutPort}`) {
-        // Alt alan adı var demek (örneğin: deneme.localhost:3000)
-        const subdomain = hostWithoutPort.replace(`.${baseDomainWithoutPort}`, "");
-        // Eğer subdomain geçerliyse yönlendir
-        if (subdomain && subdomain !== "www") {
-            return NextResponse.rewrite(new URL(`/t/${subdomain}${pathname}`, req.url));
-        }
-    }
+   
 
     const res = NextResponse.next();
 

@@ -10,8 +10,6 @@ import {
 } from "@heroui/react";
 import { CategoryForm } from "../types";
 
-const F = "Arial, sans-serif";
-
 interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,11 +30,11 @@ export function CategoryModal({
       <ModalContent>
         {(onModalClose) => (
           <>
-            <ModalHeader style={{ fontFamily: F, fontWeight: 700 }}>
-              Yeni Kategori Ekle
-            </ModalHeader>
+            <ModalHeader>Yeni Kategori Ekle</ModalHeader>
             <ModalBody>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
                 <Input
                   label="Kategori Adı"
                   value={catForm.name}
@@ -46,6 +44,8 @@ export function CategoryModal({
                   isRequired
                   placeholder="örn: Spa, Ağda..."
                   autoComplete="off"
+                  maxLength={24}
+                  minLength={2}
                 />
               </div>
             </ModalBody>
@@ -53,14 +53,7 @@ export function CategoryModal({
               <Button variant="light" onPress={onModalClose}>
                 İptal
               </Button>
-              <Button
-                color="primary"
-                onPress={onSave}
-                style={{
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg,#3b82f6,#2563eb)",
-                }}
-              >
+              <Button color="primary" onPress={onSave}>
                 Ekle
               </Button>
             </ModalFooter>

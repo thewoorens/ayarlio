@@ -33,12 +33,14 @@ export default function DashboardView() {
       value: stats.totalAppointments.toString(),
       accent: "#3b82f6",
       icon: <CalendarClock size={18} />,
+      url: "/pano/randevular"
     },
     {
       label: "Aktif Müşteri",
       value: stats.activeCustomers.toString(),
       accent: "#8b5cf6",
       icon: <UserRoundCheck size={18} />,
+      url: "/pano/musteriler"
     },
     {
       label: "Gelir",
