@@ -71,8 +71,8 @@ export function AppointmentModal({
                   isRequired
                 >
                   {customers.map((c) => (
-                    <SelectItem key={c._id} textValue={`${c.firstName} ${c.lastName}`}>
-                      {`${c.firstName} ${c.lastName}`}
+                    <SelectItem key={c._id} textValue={`${c.name}`}>
+                      {`${c.name}`}
                     </SelectItem>
                   ))}
                 </Select>

@@ -8,11 +8,10 @@ import clsx from "clsx";
 interface FilterBtnProps {
   label: string;
   active: boolean;
-  color?: string;
   onPress: () => void;
 }
 
-function FilterBtn({ label, active, color, onPress }: FilterBtnProps) {
+function FilterBtn({ label, active, onPress }: FilterBtnProps) {
   return (
     <Button
       size="sm"
@@ -22,18 +21,9 @@ function FilterBtn({ label, active, color, onPress }: FilterBtnProps) {
       className={clsx(
         "text-xs px-3 h-8 transition-all",
         active
-          ? "font-semibold shadow-sm"
+          ? "font-semibold shadow-sm bg-neutral-100 border-neutral-200"
           : "font-medium text-gray-500 hover:text-gray-700",
       )}
-      style={
-        active && color
-          ? {
-              backgroundColor: color + "20",
-              borderColor: color + "55",
-              color: color,
-            }
-          : undefined
-      }
     >
       {label}
     </Button>
@@ -86,7 +76,6 @@ export function FilterBar({
             <FilterBtn
               label={c.name}
               active={catFilter === c.name}
-              color={c.color}
               onPress={() => onCatFilterChange(c.name)}
             />
 

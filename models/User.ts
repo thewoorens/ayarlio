@@ -14,6 +14,9 @@ export interface IUser extends Document {
     verifyEmailExpire?: Date;
     resetPasswordToken?: string;
     resetPasswordExpire?: Date;
+    deleteAccountOTP?: string;
+    deleteAccountOTPExpire?: Date;
+    tokenVersion: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -24,6 +27,16 @@ const UserSchema = new Schema<IUser>(
             type: Schema.Types.ObjectId,
             ref: 'Tenant',
             index: true,
+        },
+        tokenVersion: {
+            type: Number,
+            default: 0,
+        },
+        deleteAccountOTP: {
+            type: String,
+        },
+        deleteAccountOTPExpire: {
+            type: Date,
         },
         name: {
             type: String,

@@ -5,8 +5,16 @@ const authPages = ["/giris-yap", "/kayit-ol", "/parola-sifirla", "/e-posta-dogru
 
 export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
+    const hostname = req.headers.get("host") || "";
 
-   
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
+
+    const isSubdomain = hostname.endsWith(`.${rootDomain}`);
+    const subdomain = isSubdomain ? hostname.replace(`.${rootDomain}`, "") : null;
+
+    if (subdomain && subdomain !== "www") {
+        return NextResponse.rewrite(new URL(`/t/${subdomain}${pathname}`, req.url));
+    }
 
     const res = NextResponse.next();
 

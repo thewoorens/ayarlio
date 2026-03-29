@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@heroui/react";
 import { UserPlus } from "lucide-react";
 
@@ -11,17 +11,53 @@ import { AddCustomerModal } from "./modals/AddCustomerModal";
 import { EditCustomerModal } from "./modals/EditCustomerModal";
 import { DeleteCustomerModal } from "./modals/DeleteCustomerModal";
 
-import { useCustomerStore } from "./store/useCustomerStore";
+import { useCustomers } from "./hooks/useCustomers";
+import { ICustomer } from "./types";
 
 function CustomersView() {
-  const store = useCustomerStore();
-
-  useEffect(() => {
-    store.loadCustomers();
-  }, [store.loadCustomers]);
+  const { customers, isLoading, deleteCustomer, deleteMultipleCustomers, createCustomer, updateCustomer } = useCustomers();
+  
+  // Selection state
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  // Modal states
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  
+  // Deletion tracking
+  const [deleteIds, setDeleteIds] = useState<string[]>([]);
 
   const selectedCustomer =
-    store.customers.find((c) => c._id === store.selectedId) ?? null;
+    customers.find((c) => c._id === selectedId) ?? null;
+
+  const openDeleteModal = (ids: string[]) => {
+    setDeleteIds(ids);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setDeleteIds([]);
+  };
+
+  const handleDelete = async () => {
+    if (deleteIds.length === 0) return;
+    
+    let success = false;
+    if (deleteIds.length === 1) {
+      success = await deleteCustomer(deleteIds[0]);
+    } else {
+      success = await deleteMultipleCustomers(deleteIds);
+    }
+
+    if (success) {
+      if (selectedId && deleteIds.includes(selectedId)) {
+        setSelectedId(null);
+      }
+      closeDeleteModal();
+    }
+  };
 
   return (
     <div className="p-6 h-[calc(100vh-81px)] flex flex-col gap-5">
@@ -33,14 +69,14 @@ function CustomersView() {
         <div>
           <h1 className="text-xl font-bold">Müşterileriniz</h1>
           <p className="text-sm text-gray-400">
-            {store.isLoading ? "Yükleniyor..." : `${store.customers.length} kayıtlı müşteri`}
+            {isLoading ? "Yükleniyor..." : `${customers.length} kayıtlı müşteri`}
           </p>
         </div>
 
         <Button
           startContent={<UserPlus size={16} />}
           color="primary"
-          onPress={() => store.setAddModalOpen(true)}
+          onPress={() => setIsAddModalOpen(true)}
         >
           Müşteri Ekle
         </Button>
@@ -54,19 +90,21 @@ function CustomersView() {
         {/* CUSTOMER LIST */}
 
         <CustomerList
-          customers={store.customers}
-          loading={store.isLoading}
-          onDelete={(id) => store.openDeleteModal([id])}
+          customers={customers}
+          loading={isLoading}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          onDelete={openDeleteModal}
         />
 
         {/* CUSTOMER DETAILS */}
 
         <CustomerDetails
-          loading={store.isLoading}
+          loading={isLoading}
           customer={selectedCustomer}
-          onEdit={() => store.setEditModalOpen(true)}
+          onEdit={() => setIsEditModalOpen(true)}
           onDelete={() =>
-            selectedCustomer && store.openDeleteModal([selectedCustomer._id])
+            selectedCustomer && openDeleteModal([selectedCustomer._id])
           }
         />
 
@@ -75,20 +113,23 @@ function CustomersView() {
       {/* MODALS */}
 
       <AddCustomerModal
-        isOpen={store.isAddModalOpen}
-        onClose={() => store.setAddModalOpen(false)}
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={createCustomer}
       />
 
       <EditCustomerModal
-        isOpen={store.isEditModalOpen}
-        onClose={() => store.setEditModalOpen(false)}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
         customer={selectedCustomer}
+        onSubmit={async (form) => selectedId ? updateCustomer(selectedId, form) : null}
       />
 
       <DeleteCustomerModal
-        isOpen={store.isDeleteModalOpen}
-        onClose={store.closeDeleteModal}
-        selectCount={store.deleteIds.length}
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        onSubmit={handleDelete}
+        selectCount={deleteIds.length}
       />
 
     </div>

@@ -53,11 +53,6 @@ export function ServiceCard({
               >
                 {categoryStr}
               </span>
-              {!s.isActive && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-gray-500 bg-gray-100">
-                  Pasif
-                </span>
-              )}
             </div>
             <h3 className="text-sm font-semibold text-gray-900 leading-tight">
               {s.name}

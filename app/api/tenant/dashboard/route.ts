@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
     const todayRows = todaysAppointments.map((a) => ({
       id: a._id.toString(),
       name: a.customerId
-        ? `${a.customerId.firstName} ${a.customerId.lastName}`
+        ? `${a.customerId.name}`
         : "İsimsiz",
       service: a.serviceId?.name || "Bilinmeyen",
       time: new Date(a.startTime).toLocaleTimeString("tr-TR", {

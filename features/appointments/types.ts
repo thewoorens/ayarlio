@@ -2,8 +2,7 @@ export type Status = "confirmed" | "pending" | "cancelled" | "completed";
 
 export interface PopulatedCustomer {
   _id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   phone: string;
   email: string;
 }
@@ -18,10 +17,8 @@ export interface PopulatedService {
 
 export interface PopulatedStaff {
   _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
   name: string;
+  email: string;
 }
 
 export interface Appointment {
@@ -39,8 +36,7 @@ export interface Appointment {
 
 export interface Customer {
   _id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   phone: string;
   email: string;
 }
@@ -128,8 +124,9 @@ export const toIsoFromDateValue = (value: { year: number; month: number; day: nu
 export const toHHMM = (value: { hour: number; minute: number }): string =>
   `${String(value.hour).padStart(2, "0")}:${String(value.minute).padStart(2, "0")}`;
 
-export const getAvatarConfig = (firstName?: string, lastName?: string) => {
-  const f = firstName?.[0] || "";
-  const l = lastName?.[0] || "";
+export const getAvatarConfig = (name?: string) => {
+  const parts = name?.trim().split(/\s+/).filter(Boolean) || [];
+  const f = parts[0]?.[0] || "";
+  const l = parts.length > 1 ? parts[parts.length - 1]?.[0] : "";
   return { initials: (f + l).toUpperCase(), color: "#3b82f6" };
 };

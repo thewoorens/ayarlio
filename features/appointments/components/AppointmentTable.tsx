@@ -96,10 +96,9 @@ export function AppointmentTable({
             ) : (
               rows.map((a) => {
                 const isSel = selId === a._id;
-                const cFirst = a.customerId?.firstName || "";
-                const cLast = a.customerId?.lastName || "";
-                const cName = `${cFirst} ${cLast}`;
-                const avatar = getAvatarConfig(cFirst, cLast);
+                const cFirst = a.customerId?.name || "";
+                const cName = `${cFirst}`;
+                const avatar = getAvatarConfig(cFirst);
                 const stName = a.staffId?.name || "Bilinmeyen";
                 const svcName = a.serviceId?.name || "";
                 const price = a.serviceId?.price ? `₺${a.serviceId.price}` : "-";

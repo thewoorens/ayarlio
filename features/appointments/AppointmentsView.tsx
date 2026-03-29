@@ -19,7 +19,7 @@ export default function AppointmentsView() {
     () =>
       store.appointments.filter((a) => {
         const s = store.search.toLowerCase();
-        const cName = `${a.customerId?.firstName || ""} ${a.customerId?.lastName || ""}`.toLowerCase();
+        const cName = `${a.customerId?.name || ""}`.toLowerCase();
         const sName = (a.serviceId?.name || "").toLowerCase();
         if (s && !cName.includes(s) && !sName.includes(s)) return false;
         if (store.tab !== "all" && a.status !== store.tab) return false;

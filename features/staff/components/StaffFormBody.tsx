@@ -6,7 +6,6 @@ import {
   Staff,
   SelectionKey,
   DAYS_ALL,
-  FONT,
   onlyLetters,
   onlyDigits,
   toHHMM,
@@ -23,8 +22,8 @@ export function StaffFormBody<T extends EditableStaff>({
   set,
 }: StaffFormBodyProps<T>) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Input
           label="Ad Soyad"
           value={form.name}
@@ -43,7 +42,7 @@ export function StaffFormBody<T extends EditableStaff>({
           autoComplete="off"
         />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="grid grid-cols-2 gap-3">
         <Input
           label="E-posta"
           value={form.email}
@@ -64,7 +63,7 @@ export function StaffFormBody<T extends EditableStaff>({
           inputMode="numeric"
         />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+      <div className="grid grid-cols-3 gap-3">
         <TimeInput
           label="Başlangıç"
           variant="bordered"
@@ -107,41 +106,26 @@ export function StaffFormBody<T extends EditableStaff>({
         </Select>
       </div>
       <div>
-        <p
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: "#9ca3af",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-            marginBottom: 8,
-          }}
-        >
+        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-2">
           Çalışma Günleri
         </p>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {DAYS_ALL.map((d) => (
-            <button
-              key={d}
-              onClick={() => toggleDay(form, d, set)}
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: FONT,
-                border: form.workDays.includes(d)
-                  ? "1px solid #bfdbfe"
-                  : "1px solid #e8eaf0",
-                background: form.workDays.includes(d) ? "#eff6ff" : "#f8f9fc",
-                color: form.workDays.includes(d) ? "#2563eb" : "#9ca3af",
-              }}
-            >
-              {d}
-            </button>
-          ))}
+        <div className="flex gap-1.5 flex-wrap">
+          {DAYS_ALL.map((d) => {
+            const isActive = form.workDays.includes(d);
+            return (
+              <button
+                type="button"
+                key={d}
+                onClick={() => toggleDay(form, d, set)}
+                className={`w-9 h-9 rounded-xl text-[11px] font-semibold transition-colors ${isActive
+                    ? "bg-blue-50 text-blue-600 border border-blue-200"
+                    : "bg-zinc-50 text-zinc-400 border border-zinc-200 hover:bg-zinc-100"
+                  }`}
+              >
+                {d}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
