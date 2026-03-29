@@ -234,7 +234,7 @@ export default function AccountSettingsView() {
                             <h3 className="text-xl font-bold text-rose-900 tracking-tight">Hesabı Kalıcı Olarak Sil</h3>
                           </div>
                           <p className="text-rose-700/70 text-sm leading-relaxed font-medium max-w-xl">
-                            {user.role === 'admin'
+                            {user?.role === 'admin'
                               ? "DİKKAT: Yönetici hesabı silindiğinde işletme profili, personel listesi, randevular ve tüm hizmet verileri kalıcı olarak silinecektir. Bu işlem geri alınamaz."
                               : "Hesabınız silindiğinde tüm kişisel verileriniz, geçmişiniz ve erişim haklarınız sistemden kalıcı olarak temizlenecektir."}
                           </p>
@@ -284,7 +284,7 @@ export default function AccountSettingsView() {
       <DeleteAccountModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        isAdmin={user.role === 'admin'}
+        isAdmin={user?.role === 'admin'}
         onInitiate={initiateDelete}
         onConfirm={confirmDelete}
       />

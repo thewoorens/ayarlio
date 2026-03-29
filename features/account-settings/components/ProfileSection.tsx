@@ -24,8 +24,8 @@ export function ProfileSection({ initialData, isSaving, onUpdate }: ProfileSecti
   const { register, handleSubmit, formState: { errors, isDirty } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: initialData.name,
-      phone: initialData.phone || ""
+      name: initialData?.name || "",
+      phone: initialData?.phone || ""
     }
   });
 

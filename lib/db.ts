@@ -1,6 +1,14 @@
 import mongoose from "mongoose";
 import logger from "./logger";
 
+import "@/models/Tenant";
+import "@/models/User";
+import "@/models/Customer";
+import "@/models/Service";
+import "@/models/Staff";
+import "@/models/Category";
+import "@/models/Appointment";
+
 const isProduction = process.env.NODE_ENV === "production";
 
 const MONGODB_URI = isProduction

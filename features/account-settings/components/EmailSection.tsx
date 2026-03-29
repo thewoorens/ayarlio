@@ -22,7 +22,7 @@ interface EmailSectionProps {
 export function EmailSection({ initialData, isSaving, onUpdate }: EmailSectionProps) {
   const { register, handleSubmit, formState: { errors, isDirty } } = useForm<EmailForm>({
     resolver: zodResolver(emailSchema),
-    defaultValues: { email: initialData.email }
+    defaultValues: { email: initialData?.email || "" }
   });
 
   return (
@@ -36,11 +36,11 @@ export function EmailSection({ initialData, isSaving, onUpdate }: EmailSectionPr
           <Mail size={120} strokeWidth={0.5} />
         </div>
         <CardBody className="p-8 relative z-10">
-          <SectionTitle 
-            title="E-posta Adresi" 
+          <SectionTitle
+            title="E-posta Adresi"
             sub="Giriş yaparken kullandığınız birincil e-posta adresiniz. Bu adres tüm bildirimler için kullanılır."
           />
-          
+
           <form onSubmit={handleSubmit(onUpdate)} className="flex flex-col gap-5 mt-6 max-w-lg">
             <Input
               {...register("email")}
@@ -57,10 +57,10 @@ export function EmailSection({ initialData, isSaving, onUpdate }: EmailSectionPr
               errorMessage={errors.email?.message}
             />
             <div className="flex justify-start">
-              <Button 
-                type="submit" 
-                variant="flat" 
-                color="primary" 
+              <Button
+                type="submit"
+                variant="flat"
+                color="primary"
                 isLoading={isSaving}
                 isDisabled={!isDirty}
                 className="font-bold h-11 px-8 rounded-xl bg-primary/10 hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"

@@ -2,9 +2,10 @@
 
 import MobileBottomNavbar from "@/components/MobileBottomNavbar";
 
-export default function DashboardMobileLayout() {
+export default function DashboardMobileLayout({ children }: { children: React.ReactNode }) {
   return (
-   <div>
+   <div className="pb-24">
+    {children}
     <MobileBottomNavbar />
    </div>
   );

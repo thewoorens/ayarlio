@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -46,9 +46,9 @@ export default function DashboardLayout({
 
   if (isMobile) {
     return (
-      <div>
-        <DashboardMobileLayout />
-      </div>
+      <DashboardMobileLayout>
+        {children}
+      </DashboardMobileLayout>
     );
   }
 

@@ -1,5 +1,8 @@
 "use client";
 
+import { useDevice } from "@/app/providers/device-provider";
+import { MobileCustomersView } from "./MobileCustomersView";
+
 import { useState } from "react";
 import { Button } from "@heroui/react";
 import { UserPlus } from "lucide-react";
@@ -14,7 +17,7 @@ import { DeleteCustomerModal } from "./modals/DeleteCustomerModal";
 import { useCustomers } from "./hooks/useCustomers";
 import { ICustomer } from "./types";
 
-function CustomersView() {
+function DesktopCustomersView() {
   const { customers, isLoading, deleteCustomer, deleteMultipleCustomers, createCustomer, updateCustomer } = useCustomers();
   
   // Selection state
@@ -136,4 +139,8 @@ function CustomersView() {
   );
 }
 
-export default CustomersView;
+export default function CustomersView() {
+  const { isMobile } = useDevice();
+  if (isMobile) return <MobileCustomersView />;
+  return <DesktopCustomersView />;
+}
