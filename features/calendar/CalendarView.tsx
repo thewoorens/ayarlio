@@ -17,6 +17,7 @@ import AppointmentDetailModal from "./modals/AppointmentDetailModal";
 export default function CalendarPage() {
   const { month, year, selectedDay, setSelectedDay, prev, next } =
     useCalendarNavigation();
+
   const { map, upcoming, dbServices, dbStaff, reloadAppointments } =
     useCalendarData(month, year);
 
@@ -59,24 +60,9 @@ export default function CalendarPage() {
   const cells = generateCalendarCells(year, month);
 
   return (
-    <div
-      style={{
-        padding: 24,
-        display: "flex",
-        gap: 18,
-        height: "calc(100vh - 64px)",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          minWidth: 0,
-        }}
-      >
+    <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-5 h-auto md:h-[calc(100vh-64px)] overflow-visible md:overflow-hidden">
+      {/* LEFT SIDE */}
+      <div className="flex-1 flex flex-col gap-3 md:gap-4 min-w-0">
         <CalendarHeader
           month={month}
           year={year}
@@ -100,25 +86,19 @@ export default function CalendarPage() {
         />
       </div>
 
-      <div
-        style={{
-          width: 225,
-          flexShrink: 0,
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          overflowY: "auto",
-        }}
-      >
+      {/* RIGHT SIDE */}
+      <div className="w-full md:w-56.25 shrink-0 flex flex-col gap-3 md:gap-4 overflow-visible md:overflow-y-auto">
         <SelectedDayPanel
           selectedDay={selectedDay}
           month={month}
           appointments={map[selectedDay] || []}
           onAppointmentClick={openEdit}
         />
+
         <UpcomingPanel upcoming={upcoming} onAppointmentClick={openDetail} />
       </div>
 
+      {/* MODALS */}
       {modal && (modal.type === "edit" || modal.type === "add") && (
         <AppointmentModal
           type={modal.type}

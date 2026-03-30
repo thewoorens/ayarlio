@@ -18,8 +18,10 @@ import {
   ChevronRight,
   Layers,
   X,
+  MenuIcon,
 } from "lucide-react";
 import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
+import { Avatar } from "@heroui/react";
 
 // ─── Navigation data (mirrors desktop sidebar) ───────────────────────────────
 const navigation = [
@@ -32,27 +34,57 @@ const navigation = [
   {
     group: "Randevular",
     items: [
-      { label: "Takvim", href: "/pano/takvim", icon: CalendarFold, color: "#3b82f6", badge: "appointments_count" },
-      { label: "Randevular", href: "/pano/randevular", icon: Album, color: "#0ea5e9" },
+      {
+        label: "Takvim",
+        href: "/pano/takvim",
+        icon: CalendarFold,
+        color: "#3b82f6",
+        badge: "appointments_count",
+      },
+      {
+        label: "Randevular",
+        href: "/pano/randevular",
+        icon: Album,
+        color: "#0ea5e9",
+      },
     ],
   },
   {
     group: "İşletme",
     items: [
-      { label: "Müşteriler", href: "/pano/musteriler", icon: Users2, color: "#22c55e" },
-      { label: "Personel", href: "/pano/personel", icon: User2, color: "#f59e0b" },
-      { label: "Hizmetler", href: "/pano/hizmetler", icon: WalletCards, color: "#ec4899" },
+      {
+        label: "Müşteriler",
+        href: "/pano/musteriler",
+        icon: Users2,
+        color: "#22c55e",
+      },
+      {
+        label: "Personel",
+        href: "/pano/personel",
+        icon: User2,
+        color: "#f59e0b",
+      },
+      {
+        label: "Hizmetler",
+        href: "/pano/hizmetler",
+        icon: WalletCards,
+        color: "#ec4899",
+      },
     ],
   },
   {
     group: "Sistem",
     items: [
-      { label: "Ayarlar", href: "/pano/ayarlar", icon: Settings, color: "#8b5cf6" },
+      {
+        label: "Ayarlar",
+        href: "/pano/ayarlar",
+        icon: Settings,
+        color: "#8b5cf6",
+      },
     ],
   },
 ];
 
-// ─── Main component ───────────────────────────────────────────────────────────
 export default function MobileBottomNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHiding, setIsHiding] = useState(false);
@@ -67,24 +99,20 @@ export default function MobileBottomNavbar() {
   const tenant = dashData?.data?.tenant;
   const appointmentsCount = dashData?.data?.stats?.totalAppointments ?? 0;
 
-  const initials =
-    user?.name
-      ?.split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "?";
-
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
   const protocol = rootDomain.includes("localhost") ? "http" : "https";
-  const previewUrl = tenant?.slug ? `${protocol}://${tenant.slug}.${rootDomain}` : "#";
+  const previewUrl = tenant?.slug
+    ? `${protocol}://${tenant.slug}.${rootDomain}`
+    : "#";
 
   // Hide FAB on scroll-down
   useEffect(() => {
     const onScroll = () => {
       const cur = window.scrollY;
-      if (cur > lastScrollY && cur > 80) { setIsHiding(true); setIsOpen(false); }
-      else setIsHiding(false);
+      if (cur > lastScrollY && cur > 80) {
+        setIsHiding(true);
+        setIsOpen(false);
+      } else setIsHiding(false);
       setLastScrollY(cur);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -100,7 +128,11 @@ export default function MobileBottomNavbar() {
     try {
       setIsLoggingOut(true);
       const res = await fetch("/api/auth/logout", { method: "POST" });
-      if (res.ok) { setIsOpen(false); router.push("/giris-yap"); router.refresh(); }
+      if (res.ok) {
+        setIsOpen(false);
+        router.push("/giris-yap");
+        router.refresh();
+      }
     } finally {
       setIsLoggingOut(false);
     }
@@ -131,8 +163,13 @@ export default function MobileBottomNavbar() {
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 380, damping: 34, mass: 0.9 }}
-            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-3xl bg-[#0f1117] text-white overflow-hidden"
+            transition={{
+              type: "spring",
+              stiffness: 380,
+              damping: 34,
+              mass: 0.9,
+            }}
+            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-3xl bg-gray-800 text-white overflow-hidden"
             style={{ maxHeight: "88vh" }}
           >
             {/* Drag handle */}
@@ -140,14 +177,9 @@ export default function MobileBottomNavbar() {
               <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
 
-            {/* ── User / Tenant header ──────────────────────────────────── */}
             <div className="flex items-center gap-3 px-5 pt-3 pb-4 shrink-0">
-              {/* Avatar */}
-              <div
-                className="w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }}
-              >
-                {initials}
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-bold shrink-0">
+                <Avatar />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[15px] font-bold leading-tight truncate">
@@ -157,15 +189,10 @@ export default function MobileBottomNavbar() {
                   {tenant?.name} · {user?.role === "admin" ? "Yönetici" : ""}
                 </p>
               </div>
-              {/* Logo pill */}
-              <div className="shrink-0 rounded-xl bg-white/8 border border-white/10 p-1.5">
-                <Image src="/ayarlio-logo.png" alt="Ayarlio" width={26} height={26} className="object-contain" />
-              </div>
             </div>
 
             {/* ── Scrollable nav area ───────────────────────────────────── */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
-
               {navigation.map((section, si) => (
                 <div key={section.group} className={si > 0 ? "mt-5" : ""}>
                   {/* Group label */}
@@ -178,22 +205,28 @@ export default function MobileBottomNavbar() {
                     {section.items.map((item, ii) => {
                       const isActive =
                         pathname === item.href ||
-                        (item.href !== "/pano" && pathname.startsWith(item.href));
+                        (item.href !== "/pano" &&
+                          pathname.startsWith(item.href));
                       const Icon = item.icon;
-                      const isBadge = "badge" in item && item.badge === "appointments_count";
+                      const isBadge =
+                        "badge" in item && item.badge === "appointments_count";
 
                       return (
                         <motion.button
                           key={item.href}
                           initial={{ opacity: 0, x: -12 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: si * 0.04 + ii * 0.03, duration: 0.22 }}
+                          transition={{
+                            delay: si * 0.04 + ii * 0.03,
+                            duration: 0.22,
+                          }}
                           onClick={() => go(item.href)}
                           className={`
                             w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-colors
-                            ${isActive
-                              ? "bg-white/12 border border-white/10"
-                              : "hover:bg-white/6 active:bg-white/10 border border-transparent"
+                            ${
+                              isActive
+                                ? "bg-white/12 border border-white/10"
+                                : "hover:bg-white/6 active:bg-white/10 border border-transparent"
                             }
                           `}
                         >
@@ -213,8 +246,11 @@ export default function MobileBottomNavbar() {
                           </div>
 
                           <span
-                            className={`flex-1 text-left text-[14.5px] ${isActive ? "font-bold text-white" : "font-medium text-white/70"
-                              }`}
+                            className={`flex-1 text-left text-[14.5px] ${
+                              isActive
+                                ? "font-bold text-white"
+                                : "font-medium text-white/70"
+                            }`}
                           >
                             {item.label}
                           </span>
@@ -227,7 +263,9 @@ export default function MobileBottomNavbar() {
 
                           <ChevronRight
                             size={15}
-                            className={isActive ? "text-white/60" : "text-white/20"}
+                            className={
+                              isActive ? "text-white/60" : "text-white/20"
+                            }
                           />
                         </motion.button>
                       );
@@ -260,7 +298,10 @@ export default function MobileBottomNavbar() {
                   className="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl border border-transparent hover:bg-white/6 active:bg-white/10 transition-colors"
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/8">
-                    <SquareArrowOutUpRight size={18} className="text-white/60" />
+                    <SquareArrowOutUpRight
+                      size={18}
+                      className="text-white/60"
+                    />
                   </div>
                   <span className="flex-1 text-left text-[14.5px] font-medium text-white/70">
                     Sayfanızı Önizleyin
@@ -286,7 +327,7 @@ export default function MobileBottomNavbar() {
             {/* Version bar */}
             <div className="shrink-0 px-5 py-3 border-t border-white/6">
               <p className="text-center text-[11px] text-white/25 tracking-wide">
-                Ayarlio v0.1.0 · BETA
+                Ayarlio v0.1.5 · BETA
               </p>
             </div>
           </motion.div>
@@ -298,51 +339,44 @@ export default function MobileBottomNavbar() {
         {!isHiding && (
           <motion.div
             key="fab"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 22 }}
-            className="fixed bottom-6 left-5 z-50"
+            initial={{ scale: 0, opacity: 0, y: 40 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0, opacity: 0, y: 40 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="fixed bottom-3 left-3 z-50"
           >
             <motion.button
-              whileTap={{ scale: 0.88 }}
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.05 }}
               onClick={() => setIsOpen((v) => !v)}
               aria-label="Menüyü aç/kapat"
-              className="relative w-14 h-14 rounded-2xl flex items-center justify-center focus:outline-none shadow-2xl overflow-hidden"
-              style={{
-                background: isOpen
-                  ? "#1e293b"
-                  : "linear-gradient(135deg, #3b82f6, #6366f1)",
-                boxShadow: isOpen
-                  ? "0 8px 30px rgba(0,0,0,0.4)"
-                  : "0 8px 30px rgba(99,102,241,0.45)",
-              }}
+              className="relative w-14 h-14 rounded-2xl flex items-center justify-center 
+        focus:outline-none overflow-hidden shadow-2xl"
             >
-              {!isOpen && (
-                <motion.span
-                  className="absolute inset-0 rounded-2xl bg-white/15"
-                  animate={{ opacity: [0.15, 0, 0.15] }}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                />
-              )}
+              <span className="absolute inset-0 rounded-2xl bg-blue-500 opacity-90 blur-[2px]" />
+
               <AnimatePresence mode="wait">
                 {isOpen ? (
-                  <motion.span key="x"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                  <motion.span
+                    key="x"
+                    initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: 90, scale: 0.6, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative z-10"
                   >
                     <X size={24} className="text-white" />
                   </motion.span>
                 ) : (
-                  <motion.span key="m"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                  <motion.span
+                    key="m"
+                    initial={{ rotate: 90, scale: 0.6, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: -90, scale: 0.6, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative z-10"
                   >
-                    <Layers size={22} className="text-white" />
+                    <MenuIcon size={26} className="text-white" />
                   </motion.span>
                 )}
               </AnimatePresence>

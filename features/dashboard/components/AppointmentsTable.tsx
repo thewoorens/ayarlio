@@ -75,7 +75,7 @@ export default function AppointmentsTable({ today }: Props) {
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 ">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 py-4 border-b border-gray-200 ">
         <div>
           <h2 className="text-[15px] font-bold text-gray-800">
             Bugünkü Randevular
@@ -86,7 +86,7 @@ export default function AppointmentsTable({ today }: Props) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <ButtonGroup size="sm" variant="flat">
             {filterButtons.map((btn) => (
               <Button

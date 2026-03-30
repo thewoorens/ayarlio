@@ -50,7 +50,7 @@ export function FilterBar({
   onOpenCatModal,
 }: FilterBarProps) {
   return (
-    <div className="flex gap-5">
+    <div className="flex-wrap sm:flex gap-5">
       <div className="flex items-center justify-between gap-3">
         <Input
           value={search}
@@ -64,7 +64,7 @@ export function FilterBar({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 mt-5 sm:mt-0">
         <FilterBtn
           label="Tümü"
           active={catFilter === "Tümü"}

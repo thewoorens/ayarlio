@@ -286,7 +286,7 @@ export default function Sidebar({
         </Popover>
 
         <div className="text-xs text-center text-gray-400 mt-1">
-          Ayarlio v0.1.0 [BETA]
+          Ayarlio v0.1.5 [BETA]
         </div>
       </div>
     </aside>

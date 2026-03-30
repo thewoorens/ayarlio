@@ -49,9 +49,7 @@ export default function StaffView() {
   const handleEdit = async () => {
     if (!editForm) return;
     const success = await updateStaff(editForm._id, editForm);
-    if (success) {
-      editD.onClose();
-    }
+    if (success) editD.onClose();
   };
 
   const delD = useDisclosure();
@@ -64,27 +62,27 @@ export default function StaffView() {
 
   const confirmDel = async () => {
     const success = await deleteStaff(delIds);
-    if (success) {
-      delD.onClose();
-    }
+    if (success) delD.onClose();
   };
 
   return (
-    <div className="p-6 h-[calc(100vh-64px)] flex flex-col gap-5">
-      <div className="flex items-center justify-between shrink-0 bg-white rounded-xl p-5"
-        style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
+    <div className="p-4 md:p-6 h-full flex flex-col gap-4 md:gap-5">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white rounded-xl p-4 md:p-5 shadow-sm">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight m-0 text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Personel
           </h1>
-          <p className="text-[13px] text-zinc-400 mt-0.5">
+          <p className="text-xs text-zinc-400">
             {staffList.length} çalışan ·{" "}
             {staffList.filter((s) => s.status === "active").length} aktif
           </p>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex flex-wrap gap-2">
           {checked.size > 0 && (
             <Button
+              size="sm"
               color="danger"
               variant="flat"
               startContent={<Trash2 size={14} />}
@@ -93,10 +91,11 @@ export default function StaffView() {
               {checked.size} Seçiliyi Sil
             </Button>
           )}
+
           <Button
+            size="sm"
             radius="lg"
             color="primary"
-            variant="solid"
             startContent={<UserPlus size={15} />}
             onPress={() => {
               setAddForm({ ...EMPTY_STAFF });
@@ -108,47 +107,46 @@ export default function StaffView() {
         </div>
       </div>
 
-      <div className="flex gap-4 flex-1 min-h-0">
-        <div className="flex flex-col gap-3 w-md shrink-0 bg-white rounded-xl p-5"
-          style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
-          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800">
+      {/* CONTENT */}
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
+        {/* LEFT PANEL */}
+        <div className="flex flex-col gap-3 w-full lg:w-80 xl:w-96 bg-white rounded-xl p-4 md:p-5 shadow-sm">
+          {/* SEARCH */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800">
             <Search size={14} className="text-zinc-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Personel ara…"
-              autoComplete="off"
-              className="bg-transparent outline-none text-[13px] w-full text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 border-none p-0"
+              className="bg-transparent outline-none text-sm w-full"
             />
             {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="bg-transparent border-none cursor-pointer outline-none hover:opacity-80 transition-opacity flex items-center justify-center p-0.5"
-              >
+              <button onClick={() => setSearch("")}>
                 <X size={13} className="text-zinc-400" />
               </button>
             )}
           </div>
 
+          {/* CHECK ALL */}
           {filteredStaff.length > 0 && (
-            <div className="flex items-center gap-2 px-1">
+            <div className="flex items-center gap-2">
               <Checkbox
                 isSelected={allChecked}
                 onValueChange={toggleAll}
                 size="sm"
               />
-              <span className="text-[11px] text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 {checked.size > 0 ? `${checked.size} seçili` : "Tümünü seç"}
               </span>
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+          {/* LIST */}
+          <div className="flex-1 overflow-y-auto space-y-2">
             {isLoading && (
-              <p className="text-[13px] text-center text-zinc-400 py-3">
-                Personel yükleniyor...
-              </p>
+              <p className="text-sm text-center text-zinc-400">Yükleniyor...</p>
             )}
+
             {filteredStaff.map((s) => (
               <StaffListItem
                 key={s._id}
@@ -163,22 +161,26 @@ export default function StaffView() {
           </div>
         </div>
 
-        {sel ? (
-          <StaffDetail
-            staff={sel}
-            onEdit={(s) => {
-              setEditForm({ ...s });
-              editD.onOpen();
-            }}
-            onDelete={(id) => askDel([id])}
-          />
-        ) : (
-          <div className="flex-1 rounded-2xl flex items-center justify-center bg-white border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800">
-            <p className="text-zinc-400 text-[13px] font-medium">Bir personel seçin</p>
-          </div>
-        )}
+        {/* RIGHT PANEL */}
+        <div className="flex-1 min-h-[300px]">
+          {sel ? (
+            <StaffDetail
+              staff={sel}
+              onEdit={(s) => {
+                setEditForm({ ...s });
+                editD.onOpen();
+              }}
+              onDelete={(id) => askDel([id])}
+            />
+          ) : (
+            <div className="h-full rounded-xl flex items-center justify-center bg-white border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800">
+              <p className="text-zinc-400 text-sm">Bir personel seçin</p>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* MODALS */}
       <AddStaffModal
         isOpen={addD.isOpen}
         onClose={addD.onClose}
@@ -187,6 +189,7 @@ export default function StaffView() {
         isSaving={isSaving}
         onSave={handleAdd}
       />
+
       <EditStaffModal
         isOpen={editD.isOpen}
         onClose={editD.onClose}
@@ -196,6 +199,7 @@ export default function StaffView() {
         onSave={handleEdit}
         onDelete={(id) => askDel([id])}
       />
+
       <DeleteStaffModal
         isOpen={delD.isOpen}
         onClose={delD.onClose}

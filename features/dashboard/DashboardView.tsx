@@ -13,6 +13,7 @@ import {
   CalendarClock,
   UserRoundCheck,
 } from "lucide-react";
+import ReleaseNotesModal from "@/components/ReleaseNotesModal";
 
 export default function DashboardView() {
   const { data, isLoading } = useDashboard();
@@ -58,6 +59,7 @@ export default function DashboardView() {
 
   return (
     <div className="p-6 space-y-5">
+      <ReleaseNotesModal />
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {statsCards.map((card, i) => (
           <StatsCard key={i} {...card} />

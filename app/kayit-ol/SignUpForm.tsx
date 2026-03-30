@@ -1,11 +1,11 @@
 "use client";
 
-import React, {useState, useCallback, useEffect, useRef} from "react";
-import {Button, Input, Checkbox, Link, Alert} from "@heroui/react";
-import {Eye, EyeOff} from "lucide-react";
-import {z} from "zod";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { Button, Input, Checkbox, Link, Alert } from "@heroui/react";
+import { Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const ALLOWED_EMAIL_DOMAINS = [
   "gmail.com",
@@ -35,9 +35,8 @@ const formatTRPhone = (value: string) => {
   if (digits.length >= 8) formatted += " ";
   if (digits.length >= 9) formatted += digits.slice(8, 10);
 
-  return {formatted, raw: digits};
+  return { formatted, raw: digits };
 };
-
 
 const registerSchema = z
   .object({
@@ -81,12 +80,11 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-
 export default function SignUpForm() {
   const [isVisible, setIsVisible] = useState(false);
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [phoneDisplay, setPhoneDisplay] = useState("");
-
+  const [phoneRaw, setPhoneRaw] = useState("");
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [alertColor, setAlertColor] = useState<"success" | "danger">("danger");
   const [isLoading, setIsLoading] = useState(false);
@@ -97,11 +95,10 @@ export default function SignUpForm() {
     register,
     handleSubmit,
     setValue,
-    formState: {errors},
+    formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
-
 
   const showAlert = useCallback(
     (message: string, color: "success" | "danger") => {
@@ -119,9 +116,11 @@ export default function SignUpForm() {
 
   const handlePhoneChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const {formatted, raw} = formatTRPhone(e.target.value);
-      setPhoneDisplay(formatted);
-      setValue("phone", raw, {
+      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+
+      setPhoneDisplay(formatTRPhone(digits).formatted);
+
+      setValue("phone", digits, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -129,12 +128,33 @@ export default function SignUpForm() {
     [setValue],
   );
 
+  const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const pos = input.selectionStart || 0;
+
+    if (e.key === "Backspace" && pos > 0) {
+      const value = input.value;
+
+      if (/\D/.test(value[pos - 1])) {
+        e.preventDefault();
+
+        let newPos = pos - 1;
+
+        while (newPos > 0 && /\D/.test(value[newPos - 1])) {
+          newPos--;
+        }
+
+        input.setSelectionRange(newPos, newPos);
+      }
+    }
+  };
+
   const onSubmit = useCallback(
     async (data: RegisterFormData) => {
       abortRef.current?.abort();
       abortRef.current = new AbortController();
 
-      const {confirmPassword, name, surname, ...rest} = data;
+      const { confirmPassword, name, surname, ...rest } = data;
       const safePayload = {
         ...rest,
         name: `${name} ${surname}`,
@@ -145,7 +165,7 @@ export default function SignUpForm() {
       try {
         const response = await fetch("/api/auth/register", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
           signal: abortRef.current.signal,
           body: JSON.stringify(safePayload),
@@ -178,7 +198,10 @@ export default function SignUpForm() {
           return;
         }
 
-        showAlert("Kayıt başarılı! Lütfen e-postanızı kontrol edin.", "success");
+        showAlert(
+          "Kayıt başarılı! Lütfen e-postanızı kontrol edin.",
+          "success",
+        );
         setTimeout(() => {
           window.location.href = "/giris-yap";
         }, 1500);
@@ -192,13 +215,12 @@ export default function SignUpForm() {
         setIsLoading(false);
       }
     },
-    [showAlert]
+    [showAlert],
   );
 
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
-
 
   return (
     <div className="flex items-center justify-center p-4">
@@ -258,6 +280,7 @@ export default function SignUpForm() {
             variant="bordered"
             value={phoneDisplay}
             onChange={handlePhoneChange}
+            onKeyDown={handlePhoneKeyDown}
             isInvalid={!!errors.phone}
             errorMessage={errors.phone?.message}
           />
@@ -272,7 +295,7 @@ export default function SignUpForm() {
             variant="bordered"
             endContent={
               <button type="button" onClick={() => setIsVisible((v) => !v)}>
-                {isVisible ? <EyeOff/> : <Eye/>}
+                {isVisible ? <EyeOff /> : <Eye />}
               </button>
             }
             onCopy={blockClipboard}
@@ -295,7 +318,7 @@ export default function SignUpForm() {
                 type="button"
                 onClick={() => setIsConfirmVisible((v) => !v)}
               >
-                {isConfirmVisible ? <EyeOff/> : <Eye/>}
+                {isConfirmVisible ? <EyeOff /> : <Eye />}
               </button>
             }
             onCopy={blockClipboard}
@@ -307,9 +330,9 @@ export default function SignUpForm() {
 
           <div className="text-sm mt-2">
             <Checkbox {...register("acceptTerms")} />
-            <Link href="/kullanim-kosullari">Kullanım Koşulları</Link>
+            <Link href="https://ayarlio.com/kullanim-kosullari" target="_blank">Kullanım Koşulları</Link>
             &nbsp;ve&nbsp;
-            <Link href="/gizlilik-sozlesmesi">Gizlilik Sözleşmesi</Link>
+            <Link href="https://ayarlio.com/gizlilik-sozlesmesi" target="_blank">Gizlilik Sözleşmesi</Link>
             &nbsp;kabul ediyorum
           </div>
 
