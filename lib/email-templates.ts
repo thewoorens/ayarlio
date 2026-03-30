@@ -1,254 +1,221 @@
-export const verifyEmailTemplate = (verifyUrl: string) => `
+const baseUrl = process.env.APP_URL || "http://localhost:3000";
+const logoUrl = `${baseUrl}/ayarlio-logo.png`;
+
+const baseTemplate = (content: string, title: string) => `
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>Ayarlio E-posta Doğrulama</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-      color: #1f2937;
-      background-color: #f3f4f6;
       margin: 0;
       padding: 0;
-      -webkit-font-smoothing: antialiased;
+      width: 100% !important;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+      background-color: #f9fafb;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
-    .wrapper {
-      padding: 40px 20px;
+    
+    table {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
     }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-      overflow: hidden;
-    }
-    .header {
-      text-align: center;
-      padding: 30px 20px;
-      background-color: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .logo {
-      font-size: 28px;
-      font-weight: 800;
-      color: #0f172a;
+    
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
       text-decoration: none;
-      letter-spacing: -0.5px;
     }
-    .content {
-      padding: 40px 30px;
+    
+    .content-table {
+      width: 100%;
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .header {
+      padding: 40px 0 30px 0;
       text-align: center;
     }
+    
+    .body-content {
+      padding: 0 40px 40px 40px;
+    }
+    
     h1 {
+      color: #111827;
       font-size: 24px;
       font-weight: 700;
-      color: #111827;
-      margin-top: 0;
-      margin-bottom: 16px;
+      line-height: 1.2;
+      margin: 0 0 16px 0;
+      text-align: center;
     }
+    
     p {
-      font-size: 16px;
       color: #4b5563;
-      margin-bottom: 30px;
-      line-height: 1.5;
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 24px 0;
     }
+    
     .btn-container {
-      margin: 30px 0;
+      text-align: center;
+      padding: 10px 0 30px 0;
     }
+    
     .btn {
-      display: inline-block;
-      padding: 14px 32px;
       background-color: #000000;
+      border-radius: 8px;
       color: #ffffff !important;
-      text-decoration: none;
+      display: inline-block;
       font-size: 16px;
       font-weight: 600;
-      border-radius: 8px;
-      transition: background-color 0.2s;
-    }
-    .btn:hover {
-      background-color: #333333;
-    }
-    .footer {
+      line-height: 50px;
       text-align: center;
-      padding: 24px 20px;
-      background-color: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      font-size: 13px;
-      color: #64748b;
+      text-decoration: none;
+      width: 240px;
+      -webkit-text-size-adjust: none;
     }
-    .link-fallback {
-      font-size: 13px;
+    
+    .footer {
+      padding: 0 40px 40px 40px;
+      text-align: center;
+    }
+    
+    .footer-text {
+      color: #9ca3af;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .divider {
+      border-top: 1px solid #e5e7eb;
+      margin: 30px 0;
+    }
+    
+    .detail-card {
+      background-color: #f3f4f6;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .detail-item {
+      margin-bottom: 12px;
+    }
+    
+    .detail-label {
       color: #6b7280;
-      word-break: break-all;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px dashed #e5e7eb;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
     }
-    .link-fallback a {
-      color: #3b82f6;
-      text-decoration: underline;
+    
+    .detail-value {
+      color: #111827;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .code-box {
+      background-color: #000000;
+      color: #ffffff;
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
     }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <div class="container">
-      <div class="header">
-        <a href="#" class="logo">Ayarlio</a>
-      </div>
-      <div class="content">
-        <h1>E-posta Adresinizi Doğrulayın</h1>
-        <p>Ayarlio'ya hoş geldiniz! İşletme profilinizi oluşturmaya başlamadan önce e-posta adresinizi doğrulamamız gerekiyor.</p>
-        
-        <div class="btn-container">
-          <a href="${verifyUrl}" class="btn">E-postamı Doğrula</a>
-        </div>
-        
-        <p style="font-size: 14px; margin-bottom: 0;">Eğer bu hesabı siz oluşturmadıysanız, bu e-postayı güvenle silebilirsiniz.</p>
-        
-        <div class="link-fallback">
-          <p style="margin-bottom: 8px; font-size: 13px;">Buton çalışmıyorsa aşağıdaki bağlantıyı tarayıcınıza kopyalayın:</p>
-          <a href="${verifyUrl}">${verifyUrl}</a>
-        </div>
-      </div>
-      <div class="footer">
-        &copy; ${new Date().getFullYear()} Ayarlio. Tüm hakları saklıdır.
-      </div>
-    </div>
-  </div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td align="center">
+        <table class="content-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
+          <!-- Logo -->
+          <tr>
+            <td class="header">
+              <img src="${logoUrl}" alt="Ayarlio" width="140" style="display: block; margin: 0 auto;">
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td class="body-content">
+              ${content}
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td class="footer">
+              <div class="divider"></div>
+              <p class="footer-text">
+                &copy; ${new Date().getFullYear()} Ayarlio. Tüm hakları saklıdır.<br>
+                Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayınız.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 `;
 
-export const resetPasswordTemplate = (resetUrl: string) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Ayarlio Parola Sıfırlama</title>
-  <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-      color: #1f2937;
-      background-color: #f3f4f6;
-      margin: 0;
-      padding: 0;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrapper {
-      padding: 40px 20px;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-      overflow: hidden;
-    }
-    .header {
-      text-align: center;
-      padding: 30px 20px;
-      background-color: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .logo {
-      font-size: 28px;
-      font-weight: 800;
-      color: #0f172a;
-      text-decoration: none;
-      letter-spacing: -0.5px;
-    }
-    .content {
-      padding: 40px 30px;
-      text-align: center;
-    }
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #111827;
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
-    p {
-      font-size: 16px;
-      color: #4b5563;
-      margin-bottom: 30px;
-      line-height: 1.5;
-    }
-    .btn-container {
-      margin: 30px 0;
-    }
-    .btn {
-      display: inline-block;
-      padding: 14px 32px;
-      background-color: #000000;
-      color: #ffffff !important;
-      text-decoration: none;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: background-color 0.2s;
-    }
-    .btn:hover {
-      background-color: #333333;
-    }
-    .footer {
-      text-align: center;
-      padding: 24px 20px;
-      background-color: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      font-size: 13px;
-      color: #64748b;
-    }
-    .link-fallback {
-      font-size: 13px;
-      color: #6b7280;
-      word-break: break-all;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px dashed #e5e7eb;
-    }
-    .link-fallback a {
-      color: #3b82f6;
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container">
-      <div class="header">
-        <a href="#" class="logo">Ayarlio</a>
-      </div>
-      <div class="content">
-        <h1>Parolanızı Sıfırlayın</h1>
-        <p>Ayarlio hesabınız için parola sıfırlama talebinde bulundunuz. Aşağıdaki butona tıklayarak yeni parolanızı belirleyebilirsiniz.</p>
-        
-        <div class="btn-container">
-          <a href="${resetUrl}" class="btn">Parolayı Sıfırla</a>
-        </div>
-        
-        <p style="font-size: 14px; margin-bottom: 0;">Bu işlemi siz talep etmediyseniz, e-postayı güvenle silebilirsiniz. Şifreniz siz yeni bir tane belirleyene kadar değişmeyecektir.</p>
-        
-        <div class="link-fallback">
-          <p style="margin-bottom: 8px; font-size: 13px;">Buton çalışmıyorsa aşağıdaki bağlantıyı tarayıcınıza kopyalayın:</p>
-          <a href="${resetUrl}">${resetUrl}</a>
-        </div>
-      </div>
-      <div class="footer">
-        &copy; ${new Date().getFullYear()} Ayarlio. Tüm hakları saklıdır.
-      </div>
-    </div>
+export const verifyEmailTemplate = (verifyUrl: string) => baseTemplate(`
+  <h1>E-posta Adresinizi Doğrulayın</h1>
+  <p>Ayarlio'ya hoş geldiniz! İşletmenizi büyütmeye başlamak için tek bir adım kaldı. Aşağıdaki butona tıklayarak e-posta adresinizi doğrulayabilirsiniz.</p>
+  
+  <div class="btn-container">
+    <a href="${verifyUrl}" class="btn">E-postayı Doğrula</a>
   </div>
-</body>
-</html>
-`;
+  
+  <p style="font-size: 14px; color: #6b7280; text-align: center;">Eğer bu hesabı siz oluşturmadıysanız, bu e-postayı güvenle silebilirsiniz.</p>
+  
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #e5e7eb;">
+    <p style="font-size: 12px; color: #9ca3af; word-break: break-all; margin-bottom: 0;">
+      Buton çalışmıyorsa bu bağlantıyı tarayıcınıza kopyalayın:<br>
+      <a href="${verifyUrl}" style="color: #3b82f6; text-decoration: underline;">${verifyUrl}</a>
+    </p>
+  </div>
+`, "E-posta Doğrulama");
+
+export const resetPasswordTemplate = (resetUrl: string) => baseTemplate(`
+  <h1>Parolanızı Sıfırlayın</h1>
+  <p>Ayarlio hesabınız için bir parola sıfırlama talebi aldık. Yeni parolanızı belirlemek için aşağıdaki butona tıklayın.</p>
+  
+  <div class="btn-container">
+    <a href="${resetUrl}" class="btn">Parolayı Sıfırla</a>
+  </div>
+  
+  <p style="font-size: 14px; color: #6b7280; text-align: center;">Bu işlemi siz talep etmediyseniz, başkası e-posta adresinizi yanlışlıkla girmiş olabilir. Parolanız siz yeni bir tane belirleyene kadar güvendedir.</p>
+  
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #e5e7eb;">
+    <p style="font-size: 12px; color: #9ca3af; word-break: break-all; margin-bottom: 0;">
+      Buton çalışmıyorsa bu bağlantıyı tarayıcınıza kopyalayın:<br>
+      <a href="${resetUrl}" style="color: #3b82f6; text-decoration: underline;">${resetUrl}</a>
+    </p>
+  </div>
+`, "Parola Sıfırlama");
 
 export const appointmentConfirmationTemplate = (
   serviceName: string,
@@ -256,104 +223,61 @@ export const appointmentConfirmationTemplate = (
   startTime: Date,
   endTime: Date,
   code: string,
-) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Ayarlio Randevu Onayı</title>
-  <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-      color: #1f2937;
-      background-color: #f3f4f6;
-      margin: 0;
-      padding: 0;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrapper {
-      padding: 40px 20px;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-      overflow: hidden;
-    }
-    .header {
-      text-align: center;
-      padding: 30px 20px;
-      background-color: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .logo {
-      font-size: 28px;
-      font-weight: 800;
-      color: #0f172a;
-      text-decoration: none;
-      letter-spacing: -0.5px;
-    }
-    .content {
-      padding: 40px 30px;
-      text-align: center;
-    }
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #111827;
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
-    p {
-      font-size: 16px;
-      color: #4b5563;
-      margin-bottom: 30px;
-      line-height: 1.5;
-    }
-    .footer {
-      text-align: center;
-      padding: 24px 20px;
-      background-color: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      font-size: 13px;
-      color: #64748b;
-    }
-    .code {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 8px 16px;
-      background-color: #e5e7eb;
-      color: #111827;
-      font-size: 18px;
-      font-weight: 600;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container">
-      <div class="header">
-        <a href="#" class="logo">Ayarlio</a>
+) => {
+  const dateStr = startTime.toLocaleString("tr-TR", {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const timeStr = `${startTime.toLocaleTimeString("tr-TR", { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString("tr-TR", { hour: '2-digit', minute: '2-digit' })}`;
+
+  return baseTemplate(`
+    <h1>Randevunuz Onaylandı!</h1>
+    <p>Harika haber! Randevunuz başarıyla oluşturuldu ve onaylandı. Detayları aşağıda bulabilirsiniz:</p>
+    
+    <div class="detail-card">
+      <div class="detail-item">
+        <div class="detail-label">Hizmet</div>
+        <div class="detail-value">${serviceName}</div>
       </div>
-      <div class="content">
-        <h1>Randevunuz Onaylandı!</h1>
-        <p>Merhaba, randevunuz başarıyla onaylandı. İşte randevu detaylarınız:</p>
-        <p><strong>Hizmet:</strong> ${serviceName}</p>
-        <p><strong>Personel:</strong> ${staffName}</p>
-        <p><strong>Tarih & Saat:</strong> ${startTime.toLocaleString("tr-TR", { dateStyle: "long", timeStyle: "short" })} - ${endTime.toLocaleTimeString("tr-TR", { timeStyle: "short" })}</p>
-        <p><strong>*Randevu Kodu:</strong><div class="code">${code}</div></p>
-        <p>Lütfen randevunuza zamanında gelmeye özen gösterin. Herhangi bir değişiklik yapmanız gerekirse, lütfen bizimle iletişime geçin.</p>
+      <div class="detail-item">
+        <div class="detail-label">Personel</div>
+        <div class="detail-value">${staffName}</div>
       </div>
-      <div class="footer">
-        &copy; ${new Date().getFullYear()} Ayarlio. Tüm hakları saklıdır.
+      <div class="detail-item">
+        <div class="detail-label">Tarih</div>
+        <div class="detail-value">${dateStr}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Saat</div>
+        <div class="detail-value">${timeStr}</div>
+      </div>
+      <div style="margin-top: 20px;">
+        <div class="detail-label">Randevu Kodu</div>
+        <div class="code-box">${code}</div>
       </div>
     </div>
+    
+    <p style="margin-bottom: 0;">Randevunuza zamanında gelmenizi rica ederiz. Herhangi bir sorunuz olursa bizimle iletişime geçmekten çekinmeyin.</p>
+  `, "Randevu Onayı");
+};
+
+export const deleteAccountOTPTemplate = (otp: string) => baseTemplate(`
+  <h1 style="color: #e11d48;">Hesap Silme Doğrulaması</h1>
+  <p>Hesabınızı silmek için bir talepte bulundunuz. Bu işlemi tamamlamak için aşağıdaki doğrulama kodunu kullanın. <strong>Dikkat: Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.</strong></p>
+  
+  <div class="btn-container">
+    <div class="code-box" style="background-color: #e11d48; color: #ffffff; padding: 15px 25px; border-radius: 8px; font-size: 24px; letter-spacing: 5px;">${otp}</div>
   </div>
-</body>
-</html>
-`;
+  
+  <p style="font-size: 14px; color: #6b7280; text-align: center;">Bu işlemi siz talep etmediyseniz, lütfen hemen şifrenizi değiştirin ve bu e-postayı dikkate almayın.</p>
+  
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #e5e7eb;">
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-bottom: 0;">
+      Doğrulama kodu 10 dakika boyunca geçerlidir.
+    </p>
+  </div>
+`, "Hesap Silme Doğrulaması");
+
+

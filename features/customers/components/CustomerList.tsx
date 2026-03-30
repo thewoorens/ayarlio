@@ -2,26 +2,25 @@
 
 import { useState, useMemo } from "react";
 import { ICustomer } from "../types";
-import { useCustomerStore } from "../store/useCustomerStore";
 
 import { Search, Trash2, X } from "lucide-react";
-import { Checkbox, Button, Spinner, Avatar } from "@heroui/react";
+import { Checkbox, Button, Avatar } from "@heroui/react";
 
 interface Props {
   customers: ICustomer[];
   loading?: boolean;
-  onDelete?: (id: string) => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onDelete?: (ids: string[]) => void;
 }
 
-export function CustomerList({ customers, loading, onDelete }: Props) {
-  const { selectedId, setSelectedId } = useCustomerStore();
-
+export function CustomerList({ customers, loading, selectedId, onSelect, onDelete }: Props) {
   const [search, setSearch] = useState("");
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   const filtered = useMemo(() => {
     return customers.filter((c) =>
-      `${c.firstName} ${c.lastName}`
+      `${c.name} ${c.email}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
@@ -34,8 +33,11 @@ export function CustomerList({ customers, loading, onDelete }: Props) {
   function toggleOne(id: string) {
     setChecked((prev) => {
       const next = new Set(prev);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -49,7 +51,9 @@ export function CustomerList({ customers, loading, onDelete }: Props) {
   }
 
   function askDelete(ids: string[]) {
-    ids.forEach((id) => onDelete?.(id));
+    if (onDelete) {
+      onDelete(ids);
+    }
   }
 
   return (
@@ -117,11 +121,11 @@ export function CustomerList({ customers, loading, onDelete }: Props) {
           return (
             <div
               key={c._id}
-              onClick={() => setSelectedId(c._id)}
-              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition
+              onClick={() => onSelect(c._id)}
+              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition group
               ${isSelected
-                  ? "bg-gray-100"
-                  : "hover:bg-gray-50"
+                  ? "bg-gray-100 shadow-sm"
+                  : "hover:bg-gray-50 shadow-none border border-transparent"
                 }`}
             >
 
@@ -136,16 +140,20 @@ export function CustomerList({ customers, loading, onDelete }: Props) {
               {/* AVATAR */}
 
               <div>
-                <Avatar size={"sm"} classNames={{
-                  base: "bg-linear-to-br from-[#FFB457] to-[#FF705B]"
-                }} />
+                <Avatar
+                  size={"sm"}
+                  name={c.name}
+                  classNames={{
+                    base: "bg-linear-to-br from-[#FFB457] to-[#FF705B] text-white"
+                  }}
+                />
               </div>
 
               {/* INFO */}
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {c.firstName} {c.lastName}
+                <p className={`text-sm font-medium truncate ${isSelected ? "text-primary" : "text-gray-900"}`}>
+                  {c.name}
                 </p>
 
                 <p className="text-xs text-gray-400 truncate">
@@ -153,14 +161,14 @@ export function CustomerList({ customers, loading, onDelete }: Props) {
                 </p>
               </div>
 
-              {/* DELETE */}
+              {/* DELETE ICON (Desktop only) */}
 
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   askDelete([c._id]);
                 }}
-                className="opacity-0 group-hover:opacity-100 transition text-red-500"
+                className="opacity-0 group-hover:opacity-100 transition p-1 hover:bg-red-50 rounded-md text-red-500"
               >
                 <Trash2 size={14} />
               </button>
@@ -168,10 +176,18 @@ export function CustomerList({ customers, loading, onDelete }: Props) {
           );
         })}
 
-        {filtered.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-6">
-            Sonuç bulunamadı
-          </p>
+        {filtered.length === 0 && !loading && (
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <p className="text-sm text-gray-400 text-center">
+              Sonuç bulunamadı
+            </p>
+          </div>
+        )}
+
+        {loading && filtered.length === 0 && (
+          <div className="py-6 flex justify-center">
+            <p className="text-sm text-gray-400">Yükleniyor...</p>
+          </div>
         )}
       </div>
     </div>

@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { Pencil, Trash2 } from "lucide-react";
 import { StaffFormBody } from "../components/StaffFormBody";
-import { Staff, FONT } from "../types";
+import { Staff } from "../types";
 
 interface EditStaffModalProps {
   isOpen: boolean;
@@ -41,7 +41,7 @@ export function EditStaffModal({
       <ModalContent>
         {form && (
           <>
-            <ModalHeader style={{ fontFamily: FONT, fontWeight: 700 }}>
+            <ModalHeader className="font-bold text-lg">
               Personel Düzenle
             </ModalHeader>
             <ModalBody>
@@ -68,10 +68,7 @@ export function EditStaffModal({
                   isLoading={isSaving}
                   onPress={onSave}
                   startContent={<Pencil size={14} />}
-                  style={{
-                    background: "linear-gradient(135deg,#3b82f6,#2563eb)",
-                    fontWeight: 700,
-                  }}
+                  className="font-bold bg-gradient-to-br from-blue-500 to-blue-600 text-white"
                 >
                   Kaydet
                 </Button>

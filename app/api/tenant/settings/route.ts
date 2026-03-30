@@ -75,7 +75,6 @@ export async function PUT(req: NextRequest) {
             tenantId,
             {
                 $set: updateFields,
-                $unset: { "settings.brandName": 1, "settings.brandSlogan": 1, "settings.brandColor": 1 }
             },
             { new: true, runValidators: true }
         );

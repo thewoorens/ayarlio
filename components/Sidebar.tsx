@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Album,
   CalendarFold,
-  ChartLine,
   LayoutDashboard,
   Settings,
   User2,
@@ -17,7 +16,7 @@ import {
   LogOut,
   GitCommitVerticalIcon,
   HelpCircleIcon,
-  CreditCardIcon,
+  UserCog2,
 } from "lucide-react";
 
 import {
@@ -26,21 +25,15 @@ import {
   PopoverTrigger,
   Divider,
   Button,
-  Avatar,
-  Spinner,
+  Avatar
 } from "@heroui/react";
 
 import { useState } from "react";
-import useSWR from "swr";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const navigation = [
   {
     group: "Genel Bakış",
-    items: [
-      { label: "Pano", href: "/pano", icon: LayoutDashboard }
-    ],
+    items: [{ label: "Pano", href: "/pano", icon: LayoutDashboard }],
   },
   {
     group: "Randevular",
@@ -111,10 +104,11 @@ export default function Sidebar({
       .join("")
       .slice(0, 2) || "U";
 
-  const previewUrl =
-    tenant?.slug && process.env.NEXT_PUBLIC_ROOT_DOMAIN
-      ? `https://${tenant.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`
-      : "#";
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
+  const protocol = rootDomain.includes("localhost") ? "http" : "https";
+  const previewUrl = tenant?.slug
+    ? `${protocol}://${tenant.slug}.${rootDomain}`
+    : "#";
 
   return (
     <aside className="fixed top-4 left-4 bottom-4 w-64 z-40 flex flex-col rounded-2xl select-none bg-white border border-gray-200 shadow-sm">
@@ -182,13 +176,13 @@ export default function Sidebar({
                         {item.label}
                       </span>
 
-                      {item.badge === "appointments_count" &&
-                        appointmentsCount &&
-                        appointmentsCount > 0 && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-100 text-red-500">
-                            {appointmentsCount}
-                          </span>
-                        )}
+                      {appointmentsCount &&
+                        item.badge === "appointments_count" &&
+                        appointmentsCount > 0 ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-100 text-red-500">
+                          {appointmentsCount}
+                        </span>
+                      ) : null}
                     </div>
                   </Link>
                 );
@@ -260,14 +254,14 @@ export default function Sidebar({
                 <p className="text-[13px] font-semibold text-gray-900">
                   {user?.name || ""}
                 </p>
-                <p className="text-[11px] text-gray-400">{user?.role}</p>
+                <p className="text-[11px] text-gray-400">{user?.role === "admin" ? "Yönetici" : ""}</p>
               </div>
             </div>
 
             <div className="px-2 py-1 flex flex-col gap-1">
-              <Button variant="light" className="w-full flex">
-                <CreditCardIcon size={15} />
-                Paketler
+              <Button variant="light" className="w-full flex" onPress={() => router.push("/pano/hesap-yonetimi")}>
+                <UserCog2 size={15} />
+                Hesap Yönetimi
               </Button>
 
               <Button
@@ -292,7 +286,7 @@ export default function Sidebar({
         </Popover>
 
         <div className="text-xs text-center text-gray-400 mt-1">
-          Ayarlio v0.1.0 [BETA]
+          Ayarlio v0.1.5 [BETA]
         </div>
       </div>
     </aside>

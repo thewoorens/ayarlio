@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { UserPlus } from "lucide-react";
 import { StaffFormBody } from "../components/StaffFormBody";
-import { EditableStaff, FONT } from "../types";
+import { EditableStaff } from "../types";
 
 interface AddStaffModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export function AddStaffModal({
       scrollBehavior="inside"
     >
       <ModalContent>
-        <ModalHeader style={{ fontFamily: FONT, fontWeight: 700 }}>
+        <ModalHeader className="font-bold text-lg">
           Yeni Personel Ekle
         </ModalHeader>
         <ModalBody>
@@ -52,10 +52,7 @@ export function AddStaffModal({
             isLoading={isSaving}
             onPress={onSave}
             startContent={<UserPlus size={14} />}
-            style={{
-              background: "linear-gradient(135deg,#3b82f6,#2563eb)",
-              fontWeight: 700,
-            }}
+            className="font-bold bg-gradient-to-br from-blue-500 to-blue-600 text-white"
           >
             Ekle
           </Button>

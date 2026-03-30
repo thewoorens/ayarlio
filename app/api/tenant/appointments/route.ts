@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
         if (code) query.code = code;
 
         const appointments = await Appointment.find(query)
-            .populate('customerId', 'firstName lastName phone email')
+            .populate('customerId', 'name phone email')
             .populate('serviceId', 'name duration price color')
             .populate('staffId', 'name')
             .sort({ startTime: -1 });
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
         await appointment.save();
 
         const populated = await Appointment.findById(appointment._id)
-            .populate('customerId', 'firstName lastName phone email')
+            .populate('customerId', 'name phone email')
             .populate('serviceId', 'name duration price color')
             .populate('staffId', 'name email');
 

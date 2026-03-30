@@ -3,11 +3,17 @@ import connectDB from "@/lib/db";
 import Appointment from "@/models/Appointment";
 import Customer from "@/models/Customer";
 import Tenant from "@/models/Tenant";
-import Notification from "@/models/Notification";
-import { sendEmail } from "@/lib/resend";
-import { appointmentConfirmationTemplate } from "@/lib/email-templates";
 import Staff from "@/models/Staff";
 import Service from "@/models/Service";
+import { sendEmail } from "@/lib/resend";
+import { appointmentConfirmationTemplate } from "@/lib/email-templates";
+
+const DAYS_MAP = ["Paz", "Pzt", "Sal", "Çrş", "Prş", "Cum", "Cmt"];
+
+const parseTime = (timeStr: string) => {
+  const [h, m] = timeStr.split(":").map(Number);
+  return h * 60 + m;
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,51 +56,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const [firstName, ...lastNameParts] = customerName.trim().split(" ");
-    const lastName = lastNameParts.join(" ") || "-";
-
-    let customer = await Customer.findOne({ tenantId, email: customerEmail });
-
-    if (!customer) {
-      customer = new Customer({
-        tenantId,
-        firstName,
-        lastName,
-        email: customerEmail,
-        phone: customerPhone,
-        notes: customerNote || "",
-      });
-
-      await customer.save();
-    } else {
-      let updated = false;
-
-      if (firstName && customer.firstName !== firstName) {
-        customer.firstName = firstName;
-        updated = true;
-      }
-
-      if (lastName && customer.lastName !== lastName) {
-        customer.lastName = lastName;
-        updated = true;
-      }
-
-      if (customerPhone && customer.phone !== customerPhone) {
-        customer.phone = customerPhone;
-        updated = true;
-      }
-
-      if (customerNote && customer.notes !== customerNote) {
-        customer.notes = customerNote;
-        updated = true;
-      }
-
-      if (updated) {
-        await customer.save();
-      }
+    const staff = await Staff.findById(staffId);
+    if (!staff) {
+      return NextResponse.json(
+        { success: false, message: "Kayıtlı personel bulunamadı." },
+        { status: 404 },
+      );
     }
+    if (staff.status !== "active") {
+      return NextResponse.json(
+        { success: false, message: "Bu personel şu anda aktif değil." },
+        { status: 400 },
+      );
+    }
+
     const start = new Date(startTime);
     const end = new Date(endTime);
+
+    // Validate working days
+    const dayName = DAYS_MAP[start.getDay()];
+    if (!staff.workDays.includes(dayName)) {
+      return NextResponse.json(
+        { success: false, message: "Personel seçilen günde çalışmamaktadır." },
+        { status: 400 },
+      );
+    }
+
+    // Validate working hours
+    const apptStartMins = start.getHours() * 60 + start.getMinutes();
+    const apptEndMins = end.getHours() * 60 + end.getMinutes();
+    const staffStartMins = parseTime(staff.startTime);
+    const staffEndMins = parseTime(staff.endTime);
+
+    if (apptStartMins < staffStartMins || apptEndMins > staffEndMins) {
+      return NextResponse.json(
+        { success: false, message: "Seçilen saatler personelin çalışma saatleri dışındadır." },
+        { status: 400 },
+      );
+    }
 
     const conflict = await Appointment.findOne({
       tenantId,
@@ -109,12 +108,40 @@ export async function POST(req: NextRequest) {
 
     if (conflict) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Seçilen saatte başka bir randevu bulunmaktadır.",
-        },
+        { success: false, message: "Seçilen saatte başka bir randevu bulunmaktadır." },
         { status: 409 },
       );
+    }
+
+    let customer = await Customer.findOne({ tenantId, email: customerEmail });
+
+    if (!customer) {
+      customer = new Customer({
+        tenantId,
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
+        notes: customerNote || "",
+      });
+      await customer.save();
+    } else {
+      let updated = false;
+
+      if (customerName && customer.name !== customerName) {
+        customer.name = customerName;
+        updated = true;
+      }
+      if (customerPhone && customer.phone !== customerPhone) {
+        customer.phone = customerPhone;
+        updated = true;
+      }
+      if (customerNote && customer.notes !== customerNote) {
+        customer.notes = customerNote;
+        updated = true;
+      }
+      if (updated) {
+        await customer.save();
+      }
     }
 
     const appointmentCode = `#${Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000}`;
@@ -133,23 +160,7 @@ export async function POST(req: NextRequest) {
 
     await appointment.save();
 
-    const notif = new Notification({
-      tenantId,
-      type: "in-app",
-      status: "pending",
-      subject: "Yeni Randevu Talebi",
-      content: `${customer.firstName} ${customer.lastName} tarafından ${start.toLocaleDateString("tr-TR")} ${start.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })} tarihi için yeni bir randevu oluşturuldu.`,
-      metadata: {
-        appointmentId: appointment._id,
-      },
-    });
-    await notif.save();
-
-    const staffName = Staff.findById(staffId).then((staff) =>
-      staff ? staff.name : "Seçilen Personel",
-    );
-
-    const serviceName = Service.findById(serviceId)?.then((service) =>
+    const serviceNamePromise = Service.findById(serviceId).then((service) =>
       service ? service.name : "Seçilen Hizmet",
     );
 
@@ -163,8 +174,8 @@ export async function POST(req: NextRequest) {
         to: customerEmail,
         subject: "Ayarlio - Randevu Talebiniz Alındı",
         html: appointmentConfirmationTemplate(
-          await serviceName,
-          await staffName,
+          await serviceNamePromise,
+          staff.name,
           start,
           end,
           appointmentCode,

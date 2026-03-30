@@ -1,8 +1,7 @@
 export interface ICustomer {
   _id: string;
   tenantId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone?: string;
   notes?: string;

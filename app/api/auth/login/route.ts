@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
       userId: user._id.toString(),
       role: user.role,
       tenantId: user.tenantId ? user.tenantId.toString() : '',
+      tokenVersion: user.tokenVersion,
       isSetup: user.isSetup,
     });
 

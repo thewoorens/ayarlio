@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState, useCallback } from "react";
+import { use, useEffect, useState, useCallback, useMemo } from "react";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import ChatWidget from "./components/ChatWidget";
 import Image from "next/image";
@@ -20,37 +20,10 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  LayoutList,
 } from "lucide-react";
 
-type Step = 1 | 2 | 3 | 4;
-
-const STEPS = [
-  { id: 1, label: "Hizmet", icon: WalletCardsIcon },
-  { id: 2, label: "Personel", icon: Users },
-  { id: 3, label: "Tarih & Saat", icon: CalendarDays },
-  { id: 4, label: "Bilgiler", icon: UserCheck },
-];
-
-const TIME_SLOTS = [
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-  "17:30",
-];
+type StepRef = { id: number; label: string; icon: any; type: string };
 
 const TR_DAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const TR_MONTHS = [
@@ -75,10 +48,12 @@ function CalendarPicker({
   value,
   onChange,
   disabledDates = [],
+  isUnavailable,
 }: {
   value: string | null;
   onChange: (date: string) => void;
   disabledDates?: string[];
+  isUnavailable?: (date: string) => boolean;
 }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -112,7 +87,6 @@ function CalendarPicker({
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
-  // pad to full weeks
   while (cells.length % 7 !== 0) cells.push(null);
 
   const isPast = (d: number) => {
@@ -122,13 +96,10 @@ function CalendarPicker({
 
   return (
     <div className="select-none">
-      {/* Month navigation */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={prevMonth}
-          disabled={
-            viewYear === today.getFullYear() && viewMonth <= today.getMonth()
-          }
+          disabled={viewYear === today.getFullYear() && viewMonth <= today.getMonth()}
           className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
         >
           <ChevronLeft size={16} />
@@ -149,19 +120,14 @@ function CalendarPicker({
         </button>
       </div>
 
-      {/* Day headers */}
       <div className="grid grid-cols-7 mb-1">
         {TR_DAYS.map((d) => (
-          <div
-            key={d}
-            className="text-center text-[10px] font-semibold text-neutral-400 py-1 tracking-wide"
-          >
+          <div key={d} className="text-center text-[10px] font-semibold text-neutral-400 py-1 tracking-wide">
             {d}
           </div>
         ))}
       </div>
 
-      {/* Date grid */}
       <motion.div
         key={`${viewYear}-${viewMonth}-grid`}
         initial={{ opacity: 0, x: 8 }}
@@ -174,27 +140,29 @@ function CalendarPicker({
           const iso = toISO(viewYear, viewMonth, day);
           const past = isPast(day);
           const disabled = past || disabledDates.includes(iso);
+          const unavailable = isUnavailable ? isUnavailable(iso) : false;
           const selected = value === iso;
-          const isToday =
-            iso ===
-            toISO(today.getFullYear(), today.getMonth(), today.getDate());
+          const isToday = iso === toISO(today.getFullYear(), today.getMonth(), today.getDate());
+          const notAllowed = disabled || unavailable;
 
           return (
             <div key={iso} className="flex justify-center">
               <motion.button
-                whileHover={!disabled ? { scale: 1.12 } : {}}
-                whileTap={!disabled ? { scale: 0.92 } : {}}
-                disabled={disabled}
-                onClick={() => !disabled && onChange(iso)}
+                whileHover={!notAllowed ? { scale: 1.12 } : {}}
+                whileTap={!notAllowed ? { scale: 0.92 } : {}}
+                disabled={notAllowed}
+                onClick={() => !notAllowed && onChange(iso)}
                 className={clsx(
                   "w-9 h-9 rounded-full text-sm font-medium transition-all duration-150 relative",
                   selected
                     ? "bg-neutral-900 text-white shadow-md"
-                    : isToday && !disabled
+                    : isToday && !notAllowed
                       ? "bg-neutral-100 text-neutral-900 font-bold"
-                      : disabled
-                        ? "text-neutral-300 cursor-not-allowed"
-                        : "text-neutral-700 hover:bg-neutral-100",
+                      : unavailable && !past
+                        ? "text-red-400 bg-red-50/50 cursor-not-allowed opacity-80 decoration-red-300"
+                        : disabled
+                          ? "text-neutral-300 cursor-not-allowed"
+                          : "text-neutral-700 hover:bg-neutral-100",
                 )}
               >
                 {day}
@@ -206,6 +174,13 @@ function CalendarPicker({
           );
         })}
       </motion.div>
+
+      <div className="mt-5 flex items-start gap-2 pt-3 border-t border-neutral-100">
+        <div className="w-3 h-3 rounded-full bg-red-50 mt-0.5 border border-red-200 shrink-0"></div>
+        <span className="text-[10.5px] text-neutral-400 leading-snug">
+          Kırmızı görünümlü günler personelin çalışmadığı veya tüm saatlerinin dolu olduğu günlerdir.
+        </span>
+      </div>
     </div>
   );
 }
@@ -296,8 +271,9 @@ export default function TenantPage({
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
 
-  const [step, setStep] = useState<Step>(1);
+  const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -315,10 +291,34 @@ export default function TenantPage({
     text: string;
   } | null>(null);
 
-  const goTo = (next: Step) => {
+  const goTo = (next: number) => {
     setDirection(next > step ? 1 : -1);
     setStep(next);
   };
+
+  const isCatFirst = Boolean(data?.tenant?.settings?.showCategoriesFirst);
+  const categories = Array.from(
+    new Set(data?.services?.map((s: any) => s.category).filter(Boolean))
+  ) as string[];
+
+  const STEPS = isCatFirst
+    ? [
+      { id: 1, label: "Kategori", icon: LayoutList, type: "category" },
+      { id: 2, label: "Hizmet", icon: WalletCardsIcon, type: "service" },
+      { id: 3, label: "Personel", icon: Users, type: "staff" },
+      { id: 4, label: "Tarih & Saat", icon: CalendarDays, type: "datetime" },
+      { id: 5, label: "Bilgiler", icon: UserCheck, type: "info" },
+    ]
+    : [
+      { id: 1, label: "Hizmet", icon: WalletCardsIcon, type: "service" },
+      { id: 2, label: "Personel", icon: Users, type: "staff" },
+      { id: 3, label: "Tarih & Saat", icon: CalendarDays, type: "datetime" },
+      { id: 4, label: "Bilgiler", icon: UserCheck, type: "info" },
+    ];
+
+  const maxSteps = STEPS.length;
+  const currentStepInfo = STEPS.find((s) => s.id === step);
+  const currentStepType = currentStepInfo?.type || "info";
 
   useEffect(() => {
     if (
@@ -367,16 +367,44 @@ export default function TenantPage({
     [selectedDate, selectedStaff, selectedService, data?.appointments],
   );
 
+  const timeSlots = useMemo(() => {
+    if (!selectedStaff || !selectedStaff.startTime || !selectedStaff.endTime) {
+      return ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"];
+    }
+    const [startH, startM] = selectedStaff.startTime.split(":").map(Number);
+    const [endH, endM] = selectedStaff.endTime.split(":").map(Number);
+    const slots = [];
+    let curH = startH;
+    let curM = startM;
+    while (curH * 60 + curM <= endH * 60 + endM) {
+      slots.push(`${String(curH).padStart(2, "0")}:${String(curM).padStart(2, "0")}`);
+      curM += 30;
+      if (curM >= 60) {
+        curH += 1;
+        curM -= 60;
+      }
+    }
+    return slots;
+  }, [selectedStaff]);
+
+  const isUnavailable = useCallback((isoStr: string) => {
+    if (!selectedStaff || !selectedStaff.workDays) return false;
+    const parsed = new Date(isoStr);
+    const trDaysMap = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+    const dayName = trDaysMap[parsed.getDay()];
+    return !selectedStaff.workDays.includes(dayName);
+  }, [selectedStaff]);
+
   // Pre-compute available slots for the selected date
   const slotAvailability = useCallback(() => {
-    return TIME_SLOTS.reduce(
+    return timeSlots.reduce(
       (acc, t) => {
         acc[t] = isTimeSlotAvailable(t);
         return acc;
       },
       {} as Record<string, boolean>,
     );
-  }, [isTimeSlotAvailable]);
+  }, [isTimeSlotAvailable, timeSlots]);
 
   const availability = slotAvailability();
 
@@ -471,11 +499,11 @@ export default function TenantPage({
   const availableStaff =
     staff?.filter((p: any) => selectedService?.staffIds?.includes(p._id)) ?? [];
 
-  const listVariants = {
+  const listVariants: any = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.055 } },
   };
-  const itemVariants = {
+  const itemVariants: any = {
     hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,
@@ -550,7 +578,7 @@ export default function TenantPage({
                   </div>
                   {/* Step counter pill */}
                   <div className="shrink-0 bg-neutral-900 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full">
-                    {step}/4
+                    {step}/{maxSteps}
                   </div>
                 </div>
 
@@ -558,7 +586,7 @@ export default function TenantPage({
                 <div className="h-1 bg-neutral-200 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-neutral-900 rounded-full"
-                    animate={{ width: `${(step / 4) * 100}%` }}
+                    animate={{ width: `${(step / maxSteps) * 100}%` }}
                     transition={{ duration: 0.4, ease: "easeInOut" }}
                   />
                 </div>
@@ -633,7 +661,7 @@ export default function TenantPage({
 
             {/* ── SUMMARY BAR ── */}
             <AnimatePresence>
-              {(selectedService || selectedStaff || selectedTime) && (
+              {(selectedCategory || selectedService || selectedStaff || selectedTime) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -642,6 +670,12 @@ export default function TenantPage({
                   className="relative z-20 border-b border-neutral-200/60 bg-white/70 backdrop-blur-sm overflow-hidden"
                 >
                   <div className="max-w-xl mx-auto px-5 py-2.5 flex flex-wrap gap-x-3 gap-y-1">
+                    {isCatFirst && selectedCategory && !selectedService && (
+                      <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                        <LayoutList size={11} className="text-neutral-400" />
+                        {selectedCategory}
+                      </span>
+                    )}
                     {selectedService && (
                       <span className="flex items-center gap-1.5 text-[11px]">
                         <WalletCardsIcon
@@ -687,9 +721,53 @@ export default function TenantPage({
                 <div className="bg-white sm:rounded-3xl sm:border sm:border-neutral-200/80 sm:shadow-sm overflow-hidden">
                   <div className="px-5 py-5 sm:px-7 sm:py-6">
                     <AnimatePresence mode="wait" custom={direction}>
-                      {/* ── STEP 1: SERVICE ── */}
-                      {step === 1 && (
-                        <SlideStep key="s1" dir={direction}>
+                      {/* ── STEP: CATEGORY ── */}
+                      {currentStepType === "category" && (
+                        <SlideStep key="cat" dir={direction}>
+                          <StepHeader
+                            icon={LayoutList}
+                            title="Kategori Seçin"
+                            subtitle="Almak istediğiniz hizmetin türünü seçin"
+                          />
+                          <motion.div
+                            className="mt-4 space-y-2.5"
+                            variants={listVariants}
+                            initial="hidden"
+                            animate="visible"
+                          >
+                            {categories.length === 0 ? (
+                              <div className="text-center py-12 text-neutral-400">
+                                Kategori bulunamadı.
+                              </div>
+                            ) : (
+                              categories.map((cat: string) => (
+                                <motion.div key={cat} variants={itemVariants}>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedCategory(cat);
+                                      setSelectedService(null);
+                                      goTo(step + 1);
+                                    }}
+                                    className={clsx(
+                                      "w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between",
+                                      selectedCategory === cat
+                                        ? "border-neutral-900 bg-neutral-900/5 shadow-sm"
+                                        : "border-neutral-200/60 bg-white hover:border-neutral-300 hover:bg-neutral-50/50"
+                                    )}
+                                  >
+                                    <div className="font-semibold text-neutral-800">{cat}</div>
+                                    <ChevronRight size={18} className="text-neutral-400" />
+                                  </button>
+                                </motion.div>
+                              ))
+                            )}
+                          </motion.div>
+                        </SlideStep>
+                      )}
+
+                      {/* ── STEP: SERVICE ── */}
+                      {currentStepType === "service" && (
+                        <SlideStep key="srv" dir={direction}>
                           <StepHeader
                             icon={WalletCardsIcon}
                             title="Hizmet Seçin"
@@ -701,13 +779,13 @@ export default function TenantPage({
                             initial="hidden"
                             animate="visible"
                           >
-                            {services.map((service: any) => (
-                              <motion.div key={service._id}>
+                            {services
+                              .filter((service: any) => isCatFirst && selectedCategory ? service.category === selectedCategory : true)
+                              .map((service: any) => (
+                              <motion.div key={service._id} variants={itemVariants}>
                                 <ServiceCard
                                   service={service}
-                                  selected={
-                                    selectedService?._id === service._id
-                                  }
+                                  selected={selectedService?._id === service._id}
                                   onSelect={() => setSelectedService(service)}
                                 />
                               </motion.div>
@@ -716,9 +794,9 @@ export default function TenantPage({
                         </SlideStep>
                       )}
 
-                      {/* ── STEP 2: STAFF ── */}
-                      {step === 2 && (
-                        <SlideStep key="s2" dir={direction}>
+                      {/* ── STEP: STAFF ── */}
+                      {currentStepType === "staff" && (
+                        <SlideStep key="stf" dir={direction}>
                           <StepHeader
                             icon={Users}
                             title="Personel Seçin"
@@ -732,17 +810,12 @@ export default function TenantPage({
                           >
                             {availableStaff.length === 0 ? (
                               <motion.div className="text-center py-12 text-neutral-400">
-                                <Users
-                                  size={28}
-                                  className="mx-auto mb-2 opacity-20"
-                                />
-                                <p className="text-sm">
-                                  Bu hizmet için uygun personel yok.
-                                </p>
+                                <Users size={28} className="mx-auto mb-2 opacity-20" />
+                                <p className="text-sm">Bu hizmet için uygun personel yok.</p>
                               </motion.div>
                             ) : (
                               availableStaff.map((p: any) => (
-                                <motion.div key={p._id}>
+                                <motion.div key={p._id} variants={itemVariants}>
                                   <StaffCard
                                     person={p}
                                     selected={selectedStaff?._id === p._id}
@@ -755,9 +828,9 @@ export default function TenantPage({
                         </SlideStep>
                       )}
 
-                      {/* ── STEP 3: DATE & TIME ── */}
-                      {step === 3 && (
-                        <SlideStep key="s3" dir={direction}>
+                      {/* ── STEP: DATE & TIME ── */}
+                      {currentStepType === "datetime" && (
+                        <SlideStep key="dt" dir={direction}>
                           <StepHeader
                             icon={CalendarDays}
                             title="Tarih & Saat"
@@ -768,6 +841,7 @@ export default function TenantPage({
                             <div className="bg-neutral-50 rounded-2xl border border-neutral-100 p-4">
                               <CalendarPicker
                                 value={selectedDate}
+                                isUnavailable={isUnavailable}
                                 onChange={(iso) => {
                                   setSelectedDate(iso);
                                   setSelectedTime(null);
@@ -781,19 +855,14 @@ export default function TenantPage({
                                 <motion.div
                                   initial={{ opacity: 0, y: 8 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  transition={{
-                                    duration: 0.3,
-                                    ease: [0.16, 1, 0.3, 1],
-                                  }}
+                                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                                 >
                                   <div className="flex items-center justify-between mb-3">
                                     <label className="text-[10px] font-semibold tracking-[0.18em] uppercase text-neutral-400">
                                       Saat Seçin
                                     </label>
                                     <span className="text-[10px] text-neutral-400">
-                                      {new Date(
-                                        selectedDate + "T12:00:00",
-                                      ).toLocaleDateString("tr-TR", {
+                                      {new Date(selectedDate + "T12:00:00").toLocaleDateString("tr-TR", {
                                         weekday: "long",
                                         day: "numeric",
                                         month: "long",
@@ -806,7 +875,7 @@ export default function TenantPage({
                                     initial="hidden"
                                     animate="visible"
                                   >
-                                    {TIME_SLOTS.map((time) => {
+                                    {timeSlots.map((time) => {
                                       const ok = availability[time];
                                       const sel = selectedTime === time;
                                       return (
@@ -821,12 +890,8 @@ export default function TenantPage({
                                             },
                                           }}
                                           disabled={!ok}
-                                          onClick={() =>
-                                            ok && setSelectedTime(time)
-                                          }
-                                          whileHover={
-                                            ok ? { scale: 1.06, y: -1 } : {}
-                                          }
+                                          onClick={() => ok && setSelectedTime(time)}
+                                          whileHover={ok ? { scale: 1.06, y: -1 } : {}}
                                           whileTap={ok ? { scale: 0.94 } : {}}
                                           className={clsx(
                                             "py-2.5 rounded-xl text-xs font-semibold border transition-all duration-150",
@@ -864,13 +929,8 @@ export default function TenantPage({
                                   animate={{ opacity: 1 }}
                                   className="flex flex-col items-center gap-2 py-6 text-neutral-300"
                                 >
-                                  <CalendarDays
-                                    size={24}
-                                    className="opacity-40"
-                                  />
-                                  <p className="text-xs text-neutral-400">
-                                    Yukarıdan bir tarih seçin
-                                  </p>
+                                  <CalendarDays size={24} className="opacity-40" />
+                                  <p className="text-xs text-neutral-400">Yukarıdan bir tarih seçin</p>
                                 </motion.div>
                               )}
                             </AnimatePresence>
@@ -878,59 +938,36 @@ export default function TenantPage({
                         </SlideStep>
                       )}
 
-                      {/* ── STEP 4: FORM ── */}
-                      {step === 4 && (
-                        <SlideStep key="s4" dir={direction}>
+                      {/* ── STEP: FORM ── */}
+                      {currentStepType === "info" && (
+                        <SlideStep key="inf" dir={direction}>
                           {submitMessage?.type === "success" ? (
                             <motion.div
                               initial={{ opacity: 0, scale: 0.93 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              transition={{
-                                duration: 0.5,
-                                ease: [0.16, 1, 0.3, 1],
-                              }}
+                              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                               className="text-center py-8 space-y-5"
                             >
                               <motion.div
                                 initial={{ scale: 0, rotate: -20 }}
                                 animate={{ scale: 1, rotate: 0 }}
-                                transition={{
-                                  delay: 0.1,
-                                  type: "spring",
-                                  stiffness: 220,
-                                  damping: 14,
-                                }}
+                                transition={{ delay: 0.1, type: "spring", stiffness: 220, damping: 14 }}
                                 className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mx-auto shadow-lg"
                               >
-                                <CheckCircle2
-                                  size={28}
-                                  className="text-white"
-                                />
+                                <CheckCircle2 size={28} className="text-white" />
                               </motion.div>
                               <div>
-                                <h3 className="serif text-2xl text-neutral-900">
-                                  Randevunuz Alındı
-                                </h3>
-                                <p className="text-neutral-500 text-sm mt-1.5">
-                                  {submitMessage.text}
-                                </p>
+                                <h3 className="serif text-2xl text-neutral-900">Randevunuz Alındı</h3>
+                                <p className="text-neutral-500 text-sm mt-1.5">{submitMessage.text}</p>
                               </div>
                               <div className="bg-neutral-50 rounded-2xl border border-neutral-100 p-4 text-left space-y-3">
                                 {[
-                                  {
-                                    label: "Hizmet",
-                                    value: selectedService?.name,
-                                  },
-                                  {
-                                    label: "Personel",
-                                    value: selectedStaff?.name,
-                                  },
+                                  { label: "Hizmet", value: selectedService?.name },
+                                  { label: "Personel", value: selectedStaff?.name },
                                   {
                                     label: "Tarih",
                                     value: selectedDate
-                                      ? new Date(
-                                          selectedDate + "T12:00:00",
-                                        ).toLocaleDateString("tr-TR", {
+                                      ? new Date(selectedDate + "T12:00:00").toLocaleDateString("tr-TR", {
                                           day: "numeric",
                                           month: "long",
                                           year: "numeric",
@@ -938,27 +975,17 @@ export default function TenantPage({
                                       : "",
                                   },
                                   { label: "Saat", value: selectedTime ?? "" },
-                                  {
-                                    label: "Tutar",
-                                    value: `${selectedService?.price} ${selectedService?.currency}`,
-                                  },
+                                  { label: "Tutar", value: `${selectedService?.price} ${selectedService?.currency}` },
                                 ].map(({ label, value }) => (
-                                  <div
-                                    key={label}
-                                    className="flex justify-between text-sm"
-                                  >
-                                    <span className="text-neutral-400">
-                                      {label}
-                                    </span>
-                                    <span className="font-semibold text-neutral-800">
-                                      {value}
-                                    </span>
+                                  <div key={label} className="flex justify-between text-sm">
+                                    <span className="text-neutral-400">{label}</span>
+                                    <span className="font-semibold text-neutral-800">{value}</span>
                                   </div>
                                 ))}
                               </div>
                               <Button
                                 variant="flat"
-                                className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-xl font-medium text-sm"
+                                className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-xl font-medium text-sm w-full"
                                 onPress={() => window.location.reload()}
                               >
                                 Yeni Randevu Oluştur
@@ -966,36 +993,12 @@ export default function TenantPage({
                             </motion.div>
                           ) : (
                             <>
-                              <StepHeader
-                                icon={UserCheck}
-                                title="Bilgileriniz"
-                                subtitle="Randevuyu tamamlamak için bilgilerinizi girin"
-                              />
-                              <motion.div
-                                className="mt-4 space-y-3"
-                                variants={listVariants}
-                                initial="hidden"
-                                animate="visible"
-                              >
+                              <StepHeader icon={UserCheck} title="Bilgileriniz" subtitle="Randevuyu tamamlamak için bilgilerinizi girin" />
+                              <motion.div className="mt-4 space-y-3" variants={listVariants} initial="hidden" animate="visible">
                                 {[
-                                  {
-                                    label: "Ad Soyad",
-                                    key: "name",
-                                    type: "text",
-                                    placeholder: "Ahmet Yılmaz",
-                                  },
-                                  {
-                                    label: "Telefon",
-                                    key: "phone",
-                                    type: "tel",
-                                    placeholder: "05XX XXX XX XX",
-                                  },
-                                  {
-                                    label: "E-posta",
-                                    key: "email",
-                                    type: "email",
-                                    placeholder: "ornek@mail.com",
-                                  },
+                                  { label: "Ad Soyad", key: "name", type: "text", placeholder: "Ahmet Yılmaz" },
+                                  { label: "Telefon", key: "phone", type: "tel", placeholder: "05XX XXX XX XX" },
+                                  { label: "E-posta", key: "email", type: "email", placeholder: "ornek@mail.com" },
                                 ].map(({ label, key, type, placeholder }) => (
                                   <motion.div key={key}>
                                     <Input
@@ -1005,18 +1008,11 @@ export default function TenantPage({
                                       variant="bordered"
                                       isRequired
                                       value={(form as any)[key]}
-                                      onChange={(e) =>
-                                        setForm({
-                                          ...form,
-                                          [key]: e.target.value,
-                                        })
-                                      }
+                                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                                       classNames={{
                                         label: "text-neutral-500 text-sm",
-                                        input:
-                                          "text-neutral-900 text-sm placeholder:text-neutral-300",
-                                        inputWrapper:
-                                          "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
+                                        input: "text-neutral-900 text-sm placeholder:text-neutral-300",
+                                        inputWrapper: "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
                                       }}
                                     />
                                   </motion.div>
@@ -1027,15 +1023,11 @@ export default function TenantPage({
                                     placeholder="Eklemek istediğiniz bir not..."
                                     variant="bordered"
                                     value={form.note}
-                                    onChange={(e) =>
-                                      setForm({ ...form, note: e.target.value })
-                                    }
+                                    onChange={(e) => setForm({ ...form, note: e.target.value })}
                                     classNames={{
                                       label: "text-neutral-500 text-sm",
-                                      input:
-                                        "text-neutral-900 text-sm placeholder:text-neutral-300",
-                                      inputWrapper:
-                                        "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
+                                      input: "text-neutral-900 text-sm placeholder:text-neutral-300",
+                                      inputWrapper: "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
                                     }}
                                     minRows={2}
                                   />
@@ -1063,7 +1055,7 @@ export default function TenantPage({
               </div>
             </div>
 
-            {/* ── BOTTOM NAV BAR (fixed, app-like) ── */}
+    {/* ── BOTTOM NAV BAR (fixed, app-like) ── */ }
             {submitMessage?.type !== "success" && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1077,7 +1069,7 @@ export default function TenantPage({
                     {step > 1 ? (
                       <motion.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => goTo((step - 1) as Step)}
+                        onClick={() => goTo(step - 1)}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-100 text-neutral-600 text-sm font-medium hover:bg-neutral-200 transition-colors"
                       >
                         <ArrowLeft size={15} />
@@ -1100,49 +1092,15 @@ export default function TenantPage({
                     )}
 
                     {/* Next / Submit */}
-                    {step < 4 ? (
+                    {step < maxSteps ? (
                       <motion.button
-                        whileHover={{
-                          scale: nextEnabled(
-                            step,
-                            selectedService,
-                            selectedStaff,
-                            selectedDate,
-                            selectedTime,
-                          )
-                            ? 1.02
-                            : 1,
-                        }}
-                        whileTap={{
-                          scale: nextEnabled(
-                            step,
-                            selectedService,
-                            selectedStaff,
-                            selectedDate,
-                            selectedTime,
-                          )
-                            ? 0.97
-                            : 1,
-                        }}
-                        disabled={
-                          !nextEnabled(
-                            step,
-                            selectedService,
-                            selectedStaff,
-                            selectedDate,
-                            selectedTime,
-                          )
-                        }
-                        onClick={() => goTo((step + 1) as Step)}
+                        whileHover={{ scale: nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime) ? 1.02 : 1 }}
+                        whileTap={{ scale: nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime) ? 0.97 : 1 }}
+                        disabled={!nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime)}
+                        onClick={() => goTo(step + 1)}
                         className={clsx(
                           "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
-                          nextEnabled(
-                            step,
-                            selectedService,
-                            selectedStaff,
-                            selectedDate,
-                            selectedTime,
-                          )
+                          nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime)
                             ? "bg-neutral-900 text-white shadow-sm"
                             : "bg-neutral-200 text-neutral-400 cursor-not-allowed",
                         )}
@@ -1152,37 +1110,13 @@ export default function TenantPage({
                       </motion.button>
                     ) : submitMessage?.type !== "error" ? (
                       <motion.button
-                        whileHover={{
-                          scale:
-                            !form.name ||
-                            !form.phone ||
-                            !form.email ||
-                            isSubmitting
-                              ? 1
-                              : 1.02,
-                        }}
-                        whileTap={{
-                          scale:
-                            !form.name ||
-                            !form.phone ||
-                            !form.email ||
-                            isSubmitting
-                              ? 1
-                              : 0.97,
-                        }}
-                        disabled={
-                          !form.name ||
-                          !form.phone ||
-                          !form.email ||
-                          isSubmitting
-                        }
+                        whileHover={{ scale: !form.name || !form.phone || !form.email || isSubmitting ? 1 : 1.02 }}
+                        whileTap={{ scale: !form.name || !form.phone || !form.email || isSubmitting ? 1 : 0.97 }}
+                        disabled={!form.name || !form.phone || !form.email || isSubmitting}
                         onClick={handleBookAppointment}
                         className={clsx(
                           "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
-                          !form.name ||
-                            !form.phone ||
-                            !form.email ||
-                            isSubmitting
+                          (!form.name || !form.phone || !form.email || isSubmitting)
                             ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
                             : "bg-neutral-900 text-white shadow-sm",
                         )}
@@ -1207,17 +1141,10 @@ export default function TenantPage({
                     className="inline-flex items-center gap-1.5 text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors"
                   >
                     <span className="w-3 h-px bg-neutral-300" />
-                    <span
-                      style={{
-                        fontFamily: "'DM Serif Display', Georgia, serif",
-                      }}
-                      className="font-normal text-neutral-500"
-                    >
+                    <span style={{ fontFamily: "'DM Serif Display', Georgia, serif" }} className="font-normal text-neutral-500">
                       ayarlio
                     </span>
-                    <span className="tracking-widest uppercase">
-                      tarafından sunulmaktadır
-                    </span>
+                    <span className="tracking-widest uppercase">tarafından sunulmaktadır</span>
                     <span className="w-3 h-px bg-neutral-300" />
                   </a>
                 </div>
@@ -1234,15 +1161,17 @@ export default function TenantPage({
 
 /* ── Helper: is next button enabled for this step ── */
 function nextEnabled(
-  step: Step,
+  stepType: string,
+  category: string | null,
   service: any,
   staff: any,
   date: string | null,
   time: string | null,
 ): boolean {
-  if (step === 1) return !!service;
-  if (step === 2) return !!staff;
-  if (step === 3) return !!date && !!time;
+  if (stepType === "category") return !!category;
+  if (stepType === "service") return !!service;
+  if (stepType === "staff") return !!staff;
+  if (stepType === "datetime") return !!date && !!time;
   return false;
 }
 

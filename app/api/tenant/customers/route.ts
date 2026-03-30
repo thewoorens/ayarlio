@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
 
         await connectDB();
 
+        // Get all customers for this tenant and sort by most recent
         const customers = await Customer.find({ tenantId }).sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, data: customers }, { status: 200 });
@@ -57,11 +58,15 @@ export async function POST(req: NextRequest) {
 
         const body = await req.json();
 
-        // Destructure and validate required fields
-        const { firstName, lastName, email, phone, notes, isActive } = body;
+        // Destructure and validate required fields with trimming
+        const name = body.name?.trim();
+        const email = body.email?.trim()?.toLowerCase();
+        const phone = body.phone?.trim();
+        const notes = body.notes?.trim();
+        const isActive = body.isActive;
 
-        if (!firstName || !lastName || !email) {
-            return NextResponse.json({ success: false, message: 'Ad, Soyad ve E-posta zorunludur' }, { status: 400 });
+        if (!name || !email) {
+            return NextResponse.json({ success: false, message: 'Ad Soyad ve E-posta zorunludur' }, { status: 400 });
         }
 
         await connectDB();
@@ -74,8 +79,7 @@ export async function POST(req: NextRequest) {
 
         const customer = new Customer({
             tenantId,
-            firstName,
-            lastName,
+            name,
             email,
             phone,
             notes,

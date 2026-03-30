@@ -30,19 +30,17 @@ export function DeleteStaffModal({
       <ModalContent>
         {(onModalClose) => (
           <>
-            <ModalHeader style={{ fontWeight: 700, color: "#dc2626" }}>
-              <div className="flex items-center gap-2">
-                <Trash2 size={15} />
-                Silme Onayı
-              </div>
+            <ModalHeader className="font-bold text-red-600 flex items-center gap-2">
+              <Trash2 size={15} />
+              Silme Onayı
             </ModalHeader>
             <ModalBody>
-              <p style={{ fontSize: 13, color: "#374151" }}>
+              <p className="text-sm text-zinc-700 dark:text-zinc-300">
                 {delIds.length === 1
                   ? `"${staffList.find((s) => s._id === delIds[0])?.name}" silinecek. Emin misiniz?`
                   : `${delIds.length} personel silinecek. Emin misiniz?`}
               </p>
-              <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>
+              <p className="text-[11px] text-zinc-400 mt-1">
                 Bu işlem geri alınamaz.
               </p>
             </ModalBody>
@@ -54,7 +52,7 @@ export function DeleteStaffModal({
                 color="danger"
                 onPress={onConfirm}
                 startContent={<Trash2 size={14} />}
-                style={{ fontWeight: 700 }}
+                className="font-bold"
               >
                 {delIds.length > 1 ? `${delIds.length} Personeli Sil` : "Sil"}
               </Button>

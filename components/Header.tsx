@@ -1,19 +1,8 @@
 ﻿"use client";
 
+import { BreadcrumbItem, Breadcrumbs, Button, Tooltip } from "@heroui/react";
 import {
-  BreadcrumbItem,
-  Breadcrumbs,
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Tooltip,
-} from "@heroui/react";
-import {
-  Bell,
-  BellDot,
   Calendar,
-  CheckCheckIcon,
   ChevronRight,
   HomeIcon,
   Plus,
@@ -119,65 +108,6 @@ export default function Header({
   const pathname = usePathname();
   const [todayCount, setTodayCount] = useState<number | null>(null);
 
-  const [notifList, setNotifList] = useState<any[]>([]);
-  const prevUnreadIds = useRef<string[]>([]);
-  const isFirstLoad = useRef(true);
-
-  // Poll notifications
-  const { data: notifRes, mutate: mutateNotifs } = useSWR(
-    "/api/tenant/notifications",
-    fetcher,
-    {
-      refreshInterval: 10000,
-    },
-  );
-
-  useEffect(() => {
-    if (notifRes?.data) {
-      const list = notifRes.data;
-      setNotifList(list);
-
-      const unreadList = list.filter((n: any) => !n.readAt);
-      const currentUnreadIds = unreadList.map((n: any) => n._id.toString());
-
-      if (!isFirstLoad.current) {
-        // Find which objects are actually new
-        const newNotifs = unreadList.filter(
-          (n: any) => !prevUnreadIds.current.includes(n._id.toString()),
-        );
-        if (newNotifs.length > 0) {
-          const audio = new Audio("/notification.mp3");
-          audio.play().catch((e) => console.error("Audio playback failed", e));
-
-          // Dispatch a global event so layout.tsx can pick this up and show a toast
-          window.dispatchEvent(
-            new CustomEvent("new-appointment-alert", { detail: newNotifs }),
-          );
-        }
-      }
-
-      prevUnreadIds.current = currentUnreadIds;
-      isFirstLoad.current = false;
-    }
-  }, [notifRes]);
-
-  const unread = notifList.filter((n) => !n.readAt).length;
-
-  const markAsRead = async (ids?: string[]) => {
-    try {
-      await fetch("/api/tenant/notifications/read", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          ids ? { notificationIds: ids } : { markAll: true },
-        ),
-      });
-      mutateNotifs();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const { data: appointmentsRes } = useSWR(
     "/api/tenant/appointments",
     fetcher,
@@ -203,7 +133,6 @@ export default function Header({
     }
   }, [appointmentsRes]);
 
-  // Ctrl+K global listener
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -221,7 +150,6 @@ export default function Header({
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
-  // Focus input on open
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
@@ -236,7 +164,6 @@ export default function Header({
 
   const showGroups = !query.trim();
 
-  // Flat list for keyboard nav
   const flatList = showGroups ? ALL_ITEMS : filtered;
 
   useEffect(() => {
@@ -295,7 +222,6 @@ export default function Header({
           </Breadcrumbs>
         </div>
 
-        {/* Search trigger */}
         <Button
           onPress={() => {
             setOpen(true);
@@ -337,7 +263,6 @@ export default function Header({
           </kbd>
         </Button>
 
-        {/* Calendar */}
         <Tooltip
           content={
             todayCount !== null
@@ -378,126 +303,8 @@ export default function Header({
         >
           <span className="hidden sm:block">Yeni Randevu</span>
         </Button>
-
-        {/* Notifications */}
-        <Popover placement="bottom-end" offset={10}>
-          <PopoverTrigger>
-            <Button
-              isIconOnly
-              radius="lg"
-              variant="flat"
-              size="sm"
-              className="bg-gray-50 border border-gray-200 h-9 w-9"
-              aria-label="Bildirimler"
-            >
-              <Tooltip
-                content={
-                  unread > 0
-                    ? `${unread} okunmamış bildirim`
-                    : "Yeni bildirim yok"
-                }
-                placement="bottom"
-                closeDelay={0}
-                offset={20}
-              >
-                {unread > 0 ? (
-                  <BellDot size={18} className="text-red-500" />
-                ) : (
-                  <Bell size={18} className="text-gray-600" />
-                )}
-              </Tooltip>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="p-0 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <span className="text-sm font-semibold text-gray-800">
-                Bildirimler
-                {unread > 0 && (
-                  <span className="bg-blue-100 text-blue-600 text-[11px] font-bold px-1.5 py-0.5 rounded-full ml-2">
-                    {unread}
-                  </span>
-                )}
-              </span>
-              {unread > 0 && (
-                <Tooltip
-                  content="Tümünü okundu işaretle"
-                  placement="bottom"
-                  closeDelay={0}
-                >
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    className="text-blue-500 h-7"
-                    onPress={() => markAsRead()}
-                  >
-                    <CheckCheckIcon size={14} />
-                  </Button>
-                </Tooltip>
-              )}
-            </div>
-            <div
-              className="max-h-80 overflow-y-auto divide-y divide-gray-50"
-              style={{ minWidth: 300 }}
-            >
-              {notifList.length === 0 ? (
-                <div className="py-8 text-center text-sm text-gray-400">
-                  Henüz bildirim yok
-                </div>
-              ) : (
-                notifList.map((n) => (
-                  <div
-                    key={n._id}
-                    onClick={() => {
-                      if (!n.readAt) markAsRead([n._id]);
-                    }}
-                    className={[
-                      "flex gap-3 px-4 py-3 cursor-pointer",
-                      !n.readAt
-                        ? "bg-blue-50/50 border-l-2 border-blue-500"
-                        : "border-l-2 border-transparent",
-                    ].join(" ")}
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-blue-100 shrink-0">
-                      <Bell
-                        size={14}
-                        className="text-blue-500"
-                        strokeWidth={2.5}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-[13px] font-semibold ${!n.readAt ? "text-gray-900" : "text-gray-500"}`}
-                      >
-                        {n.subject}
-                      </p>
-                      <p
-                        className="text-[12px] text-gray-400 mt-0.5"
-                        style={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {n.content}
-                      </p>
-                    </div>
-                    <span className="text-[11px] text-gray-400 shrink-0">
-                      {new Date(n.createdAt).toLocaleTimeString("tr-TR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
       </header>
 
-      {/* Command Palette — Light theme */}
       {open && (
         <div
           onClick={() => setOpen(false)}
@@ -526,7 +333,6 @@ export default function Header({
               margin: "0 16px",
             }}
           >
-            {/* Input */}
             <div
               style={{
                 display: "flex",
@@ -569,11 +375,10 @@ export default function Header({
                 }}
               >
                 <span className="ml-2">ESC</span>
-                <CircleX size={14} className="mx-2"/>
+                <CircleX size={14} className="mx-2" />
               </Button>
             </div>
 
-            {/* Results */}
             <div
               ref={listRef}
               style={{ maxHeight: 360, overflowY: "auto", padding: "8px 0" }}
@@ -759,7 +564,6 @@ export default function Header({
               )}
             </div>
 
-            {/* Footer */}
             <div
               style={{
                 display: "flex",

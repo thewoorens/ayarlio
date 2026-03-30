@@ -1,32 +1,29 @@
 "use client";
-import { Button } from "@heroui/react";
-import { Plus, Trash2 } from "lucide-react";
-import { Category } from "../types";
 
-const F = "Arial, sans-serif";
+import { Button, Input } from "@heroui/react";
+import { Plus, Trash2, Search } from "lucide-react";
+import { Category } from "../types";
+import clsx from "clsx";
 
 interface FilterBtnProps {
   label: string;
   active: boolean;
-  color?: string;
   onPress: () => void;
 }
 
-function FilterBtn({ label, active, color, onPress }: FilterBtnProps) {
+function FilterBtn({ label, active, onPress }: FilterBtnProps) {
   return (
     <Button
       size="sm"
       radius="full"
       variant={active ? "flat" : "bordered"}
       onPress={onPress}
-      style={{
-        fontFamily: F,
-        fontWeight: active ? 700 : 500,
-        borderColor: active ? (color || "#3b82f6") + "55" : "#e8eaf0",
-        background: active ? (color ? color + "20" : "#eff6ff") : "#fff",
-        color: active ? color || "#2563eb" : "#6b7280",
-        transition: "all 0.18s",
-      }}
+      className={clsx(
+        "text-xs px-3 h-8 transition-all",
+        active
+          ? "font-semibold shadow-sm bg-neutral-100 border-neutral-200"
+          : "font-medium text-gray-500 hover:text-gray-700",
+      )}
     >
       {label}
     </Button>
@@ -39,8 +36,6 @@ interface FilterBarProps {
   catFilter: string;
   onCatFilterChange: (name: string) => void;
   cats: Category[];
-  hoveredCatId: string | null;
-  onCatHover: (id: string | null) => void;
   onDeleteCat: (id: string) => void;
   onOpenCatModal: () => void;
 }
@@ -51,143 +46,66 @@ export function FilterBar({
   catFilter,
   onCatFilterChange,
   cats,
-  hoveredCatId,
-  onCatHover,
   onDeleteCat,
   onOpenCatModal,
 }: FilterBarProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        marginBottom: 20,
-        flexWrap: "wrap",
-      }}
-    >
-      {/* Search input */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 12px",
-          borderRadius: 12,
-          background: "#fff",
-          border: "1px solid #e8eaf0",
-          width: 220,
-        }}
-      >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#d1d5db"
-          strokeWidth="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input
+    <div className="flex-wrap sm:flex gap-5">
+      <div className="flex items-center justify-between gap-3">
+        <Input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Hizmet ara…"
-          autoComplete="off"
-          style={{
-            background: "none",
-            border: "none",
-            outline: "none",
-            fontSize: 13,
-            color: "#1f2937",
-            fontFamily: F,
-            width: "100%",
-          }}
+          placeholder="Hizmet ara..."
+          radius="lg"
+          startContent={<Search size={14} />}
+          className="max-w-xs"
+          color="primary"
+          variant="bordered"
         />
       </div>
 
-      {/* Category filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: 6,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
+      <div className="flex flex-wrap items-center gap-2 mt-5 sm:mt-0">
         <FilterBtn
           label="Tümü"
           active={catFilter === "Tümü"}
           onPress={() => onCatFilterChange("Tümü")}
         />
+
         {cats.map((c) => (
-          <div
-            key={c._id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              position: "relative",
-            }}
-            onMouseEnter={() => onCatHover(c._id)}
-            onMouseLeave={() => onCatHover(null)}
-          >
+          <div key={c._id} className="relative group flex items-center">
             <FilterBtn
               label={c.name}
               active={catFilter === c.name}
-              color={c.color}
               onPress={() => onCatFilterChange(c.name)}
             />
-            {hoveredCatId === c._id && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteCat(c._id);
-                }}
-                style={{
-                  position: "absolute",
-                  right: -8,
-                  top: -8,
-                  width: 20,
-                  height: 20,
-                  borderRadius: "50%",
-                  border: "1px solid #fecaca",
-                  background: "#fff",
-                  color: "#ef4444",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                }}
-                aria-label="Kategoriyi sil"
-              >
-                <Trash2 size={11} />
-              </button>
-            )}
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteCat(c._id);
+              }}
+              className={clsx(
+                "cursor-pointer absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center",
+                "rounded-full border border-red-200 bg-white text-red-500 shadow-sm",
+                "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100",
+                "transition-all duration-150 hover:bg-red-50",
+              )}
+            >
+              <Trash2 size={11} />
+            </button>
           </div>
         ))}
-
-        {/* Add category button */}
-        <button
-          onClick={onOpenCatModal}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "7px 12px",
-            borderRadius: 10,
-            border: "1px dashed #d1d5db",
-            background: "#fafafa",
-            color: "#9ca3af",
-            fontSize: 12,
-            cursor: "pointer",
-            fontFamily: F,
-          }}
+        <Button
+          size="sm"
+          color="primary"
+          variant="faded"
+          radius="lg"
+          startContent={<Plus size={14} />}
+          onPress={onOpenCatModal}
+          className="font-semibold"
         >
-          <Plus size={12} /> Kategori Ekle
-        </button>
+          Kategori Ekle
+        </Button>
       </div>
     </div>
   );

@@ -1,9 +1,7 @@
 "use client";
 import { Checkbox } from "@heroui/react";
-import { Trash2 } from "lucide-react";
-import { Service, Category, Staff } from "../types";
-
-const F = "Arial, sans-serif";
+import { Trash2, Edit2, Clock } from "lucide-react";
+import { Service, Category, Staff, UNIT_LABELS } from "../types";
 
 interface ServiceCardProps {
   service: Service;
@@ -17,65 +15,31 @@ interface ServiceCardProps {
 
 export function ServiceCard({
   service: s,
-  cats,
   staffList,
   isChecked,
   onToggleCheck,
   onEdit,
   onDelete,
 }: ServiceCardProps) {
+  const categoryStr = s.category || "Kategori Yok";
+
   return (
     <div
       onClick={() => onEdit(s)}
-      style={{
-        borderRadius: 16,
-        padding: 20,
-        background: "#fff",
-        border: isChecked ? "1px solid #bfdbfe" : "1px solid #e8eaf0",
-        opacity: s.isActive ? 1 : 0.6,
-        cursor: "pointer",
-        position: "relative",
-        overflow: "hidden",
-        transition: "border-color 0.15s",
-      }}
-      onMouseEnter={(e) => {
-        if (!isChecked)
-          e.currentTarget.style.borderColor = (s.color || "#e8eaf0") + "55";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = isChecked
-          ? "#bfdbfe"
-          : "#e8eaf0";
-      }}
+      className={`
+        relative overflow-hidden rounded-2xl p-5 bg-white cursor-pointer transition-all duration-200
+        ${isChecked ? "border-blue-200 shadow-sm ring-1 ring-blue-50" : "border-gray-200 hover:border-gray-300"}
+        ${s.isActive ? "opacity-100" : "opacity-60 grayscale-[0.2]"}
+        border
+      `}
     >
-      {/* Left color bar */}
       <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 16,
-          bottom: 16,
-          width: 3,
-          borderRadius: 99,
-          background: s.category
-            ? cats.find((c) => c.name === s.category)?.color ||
-              s.color ||
-              "#3b82f6"
-            : s.color || "#3b82f6",
-        }}
+        className="absolute left-0 top-4 bottom-4 w-0.5 rounded-r-full"
       />
 
-      {/* Checkbox + Edit row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: 10,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-start justify-between mb-2.5">
+        <div className="flex items-start gap-3">
+          <div onClick={(e) => e.stopPropagation()} className="pt-0.5">
             <Checkbox
               isSelected={isChecked}
               onValueChange={() => onToggleCheck(s._id)}
@@ -83,156 +47,77 @@ export function ServiceCard({
             />
           </div>
           <div>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 600,
-                padding: "2px 8px",
-                borderRadius: 99,
-                color: s.color || "#3b82f6",
-                background: (s.color || "#3b82f6") + "18",
-              }}
-            >
-              {s.category || "Kategori Yok"}
-            </span>
-            {!s.isActive && (
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  padding: "2px 8px",
-                  borderRadius: 99,
-                  color: "#6b7280",
-                  background: "rgba(107,114,128,0.1)",
-                  marginLeft: 6,
-                }}
+                className="text-xs font-semibold py-0.5 rounded-full"
               >
-                Pasif
+                {categoryStr}
               </span>
-            )}
-            <h3
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: "#111827",
-                marginTop: 4,
-                fontFamily: F,
-              }}
-            >
+            </div>
+            <h3 className="text-sm font-semibold text-gray-900 leading-tight">
               {s.name}
             </h3>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 4 }}>
+        <div className="flex items-center gap-1.5 ml-2 shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit(s);
             }}
-            style={{
-              padding: "6px 8px",
-              borderRadius: 9,
-              background: "rgba(59,130,246,0.1)",
-              color: "#3b82f6",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-            }}
+            className="cursor-pointer p-1.5 rounded-xl bg-blue-50 text-blue-500 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+            title="Düzenle"
           >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
+            <Edit2 size={14} />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(s._id);
             }}
-            style={{
-              padding: "6px 8px",
-              borderRadius: 9,
-              background: "rgba(239,68,68,0.1)",
-              color: "#ef4444",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-            }}
+            className="cursor-pointer p-1.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+            title="Sil"
           >
-            <Trash2 size={13} />
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
 
-      {/* Description */}
-      <p
-        style={{
-          fontSize: 12,
-          color: "#9ca3af",
-          marginBottom: 14,
-          lineHeight: 1.5,
-        }}
-      >
+      <p className="text-xs text-gray-400 mb-4 line-clamp-2 leading-relaxed pl-7">
         {s.description || "Açıklama yok"}
       </p>
 
-      {/* Duration / bookings / price */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            ⏱ {s.duration?.value || 0}
-          </span>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            · {s.bookings || 0} rezervasyon
-          </span>
+      <div className="flex items-center justify-between pl-7">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-xs font-medium text-gray-500">
+            <Clock size={12} className="text-gray-400" />
+            <span>
+              {s.duration?.value || 0}{" "}
+              {s.duration?.unit ? UNIT_LABELS[s.duration.unit] : "dk"}
+            </span>
+          </div>
         </div>
-        <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>
+        <span className="text-sm font-bold text-gray-900">
           ₺{s.price}
         </span>
       </div>
 
-      {/* Staff tags */}
-      <div
-        style={{
-          display: "flex",
-          gap: 6,
-          marginTop: 10,
-          flexWrap: "wrap",
-        }}
-      >
-        {(s.staffIds || []).map((stId) => {
-          const staffObj = staffList.find((x) => x._id === stId);
-          return (
-            <span
-              key={stId}
-              style={{
-                fontSize: 10,
-                padding: "2px 8px",
-                borderRadius: 99,
-                background: "#f4f6fb",
-                color: "#9ca3af",
-                border: "1px solid #e8eaf0",
-              }}
-            >
-              {staffObj ? staffObj.name : stId}
-            </span>
-          );
-        })}
-      </div>
+      {s.staffIds && s.staffIds.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-50 pl-7">
+          {s.staffIds.map((stId) => {
+            const staffObj = staffList.find((x) => x._id === stId);
+            return (
+              <span
+                key={stId}
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-50 text-gray-500 border border-gray-100"
+              >
+                {staffObj ? staffObj.name : stId}
+              </span>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

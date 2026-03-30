@@ -31,7 +31,13 @@ export async function PUT(req: NextRequest, props: { params: Promise<{ id: strin
         }
 
         const body = await req.json();
-        const { firstName, lastName, email, phone, notes, isActive } = body;
+        
+        // Trimming inputs
+        const name = body.name?.trim();
+        const email = body.email?.trim()?.toLowerCase();
+        const phone = body.phone?.trim();
+        const notes = body.notes?.trim();
+        const isActive = body.isActive;
 
         await connectDB();
 
@@ -44,15 +50,14 @@ export async function PUT(req: NextRequest, props: { params: Promise<{ id: strin
         }
 
         const updateData: any = {};
-        if (firstName) updateData.firstName = firstName;
-        if (lastName) updateData.lastName = lastName;
+        if (name) updateData.name = name;
         if (email) updateData.email = email;
         if (phone !== undefined) updateData.phone = phone;
         if (notes !== undefined) updateData.notes = notes;
         if (isActive !== undefined) updateData.isActive = isActive;
 
         const customer = await Customer.findOneAndUpdate(
-            { _id: customerId, tenantId }, // Ensure tenant owner
+            { _id: customerId, tenantId }, // Ensure tenant ownership for security
             { $set: updateData },
             { new: true, runValidators: true }
         );
@@ -98,6 +103,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
 
         await connectDB();
 
+        // Delete the customer, ensuring it belongs to the current tenant
         const customer = await Customer.findOneAndDelete({ _id: customerId, tenantId });
 
         if (!customer) {
