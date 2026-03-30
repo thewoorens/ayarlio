@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       userId: user._id.toString(),
       role: user.role,
       tenantId: tenant._id.toString(),
+      tokenVersion: user.tokenVersion,
       isSetup: true,
     });
 
