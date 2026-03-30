@@ -21,6 +21,7 @@
     "@netlify/plugin-nextjs": "^5.15.9",
     "@tailwindcss/postcss": "^4.1.18",
     "@upstash/ratelimit": "^2.0.8",
+    "@vercel/speed-insights": "^2.0.0",
     "@xyflow/react": "^12.10.0",
     "argon2": "^0.44.0",
     "crypto": "^1.0.1",

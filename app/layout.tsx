@@ -7,6 +7,7 @@ import { DeviceProvider } from "./providers/device-provider";
 import { headers } from "next/headers";
 import { HeroProvider } from "./providers/hero-provider";
 import { ToastProvider } from "@/components/ToastProvider";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default async function RootLayout({
             </ToastProvider>
           </DeviceProvider>
         </HeroProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
