@@ -2,8 +2,6 @@
 
 import { use, useEffect, useState, useCallback, useMemo } from "react";
 import NotFoundRedirect from "./components/NotFoundRedirect";
-import ChatWidget from "./components/ChatWidget";
-import Image from "next/image";
 import { Button, Input, Textarea, Spinner } from "@heroui/react";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -221,8 +219,8 @@ function AyarlioIntro({ onDone }: { onDone: () => void }) {
           animate={{ rotate: 0, scale: 1 }}
           transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <Image
-            src="/ayarlio-logo.png"
+          <img
+            src="https://ayarlio.vercel.app/ayarlio-logo.png"
             alt="Ayarlio Logo"
             width={200}
             height={200}
@@ -1153,8 +1151,6 @@ export default function TenantPage({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {data?.tenant && <ChatWidget tenantName={tenant?.name} />}
     </>
   );
 }
