@@ -13,7 +13,7 @@ export function useCalendarData(month: number, year: number) {
     try {
       const res = await fetch('/api/tenant/appointments');
       const json = await res.json();
-      
+
       if (json.success) {
         const raw = json.data;
         const newMap: Record<number, Appointment[]> = {};
@@ -32,7 +32,7 @@ export function useCalendarData(month: number, year: number) {
 
           const mappedAppt: Appointment = {
             id: appt._id,
-            label: appt.customerId ? `${appt.customerId.firstName} ${appt.customerId.lastName}` : 'İsimsiz',
+            label: appt.customerId ? `${appt.customerId.name}` : 'İsimsiz',
             phone: appt.customerId?.phone || '',
             email: appt.customerId?.email || '',
             color: appt.serviceId?.color || COLORS[0],
@@ -69,7 +69,7 @@ export function useCalendarData(month: number, year: number) {
         fetch('/api/tenant/services'),
         fetch('/api/tenant/staff')
       ]);
-      
+
       const jsonSvc = await resSvc.json();
       const jsonStf = await resStf.json();
 

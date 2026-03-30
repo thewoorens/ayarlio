@@ -6,7 +6,6 @@ export interface IStaff extends Document {
     role: string;
     email: string;
     phone: string;
-    color: string;
     status: 'active' | 'leave' | 'inactive';
     startTime: string;
     endTime: string;
@@ -45,10 +44,6 @@ const StaffSchema = new Schema<IStaff>(
             trim: true,
             default: '',
         },
-        color: {
-            type: String,
-            default: '#3b82f6',
-        },
         status: {
             type: String,
             enum: ['active', 'leave', 'inactive'],
@@ -72,7 +67,6 @@ const StaffSchema = new Schema<IStaff>(
     }
 );
 
-// Performance index for fetching staff for a tenant
 StaffSchema.index({ tenantId: 1 });
 
 const Staff = mongoose.models.Staff || mongoose.model<IStaff>('Staff', StaffSchema);

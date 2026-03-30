@@ -1,7 +1,6 @@
 export interface Category {
   _id: string;
   name: string;
-  color: string;
 }
 
 export interface ServiceDuration {
@@ -18,8 +17,6 @@ export interface Service {
   description: string;
   staffIds: string[];
   isActive: boolean;
-  bookings: number;
-  color: string;
 }
 
 export interface Staff {
@@ -35,7 +32,6 @@ export interface ServiceForm {
   description: string;
   staffIds: string[];
   isActive: boolean;
-  color: string;
 }
 
 export interface CategoryForm {
@@ -55,10 +51,7 @@ export const EMPTY_SERVICE_FORM: ServiceForm = {
   description: "",
   staffIds: [],
   isActive: true,
-  color: "#3b82f6",
 };
-
-export const CATEGORY_COLOR = "#3b82f6";
 
 export const UNIT_LABELS: Record<ServiceDuration["unit"], string> = {
   minutes: "dk",

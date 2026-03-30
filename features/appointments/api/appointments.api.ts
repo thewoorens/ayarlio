@@ -52,6 +52,13 @@ export const appointmentsApi = {
         if (!res.ok) throw new Error('Failed to patch status');
     },
 
+    fetchAppointment: async (id: string): Promise<Appointment> => {
+        const res = await fetch(`/api/tenant/appointments/${id}`);
+        const data: { success: boolean; data?: Appointment } = await res.json();
+        if (!res.ok || !data.data) throw new Error('Failed to fetch appointment');
+        return data.data;
+    },
+
     deleteAppointment: async (id: string): Promise<void> => {
         const res = await fetch(`/api/tenant/appointments/${id}`, {
             method: 'DELETE',

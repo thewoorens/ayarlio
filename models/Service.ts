@@ -78,7 +78,6 @@ const ServiceSchema = new Schema<IService>(
     }
 );
 
-// Performance index for fetching active services for a tenant
 ServiceSchema.index({ tenantId: 1, isActive: 1 });
 
 const Service = mongoose.models.Service || mongoose.model<IService>('Service', ServiceSchema);

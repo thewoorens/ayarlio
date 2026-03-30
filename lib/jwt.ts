@@ -4,6 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-fallback-secret-key'; // Ensu
 
 export interface JwtPayload {
     userId: string;
+    tokenVersion: number;
     tenantId?: string;
     role: string;
     [key: string]: any;

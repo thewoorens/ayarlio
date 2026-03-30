@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         await connectDB();
 
         const appointment = await Appointment.findOne({ _id: appointmentId, tenantId })
-            .populate('customerId', 'firstName lastName phone email')
+            .populate('customerId', 'name phone email')
             .populate('serviceId', 'name duration price color')
             .populate('staffId', 'name email');
 
@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest, props: { params: Promise<{ id: strin
             { $set: updateData },
             { new: true, runValidators: true }
         )
-            .populate('customerId', 'firstName lastName phone email')
+            .populate('customerId', 'name phone email')
             .populate('serviceId', 'name duration price color')
             .populate('staffId', 'name email');
 

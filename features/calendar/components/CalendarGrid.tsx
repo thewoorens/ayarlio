@@ -40,7 +40,7 @@ export default function CalendarGrid({
       borderRadius: 16,
       overflow: "hidden",
       display: "flex",
-      flexDirection: "column"
+      flexDirection: "column",
     }}>
       {/* Header */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid #f0f2f7" }}>

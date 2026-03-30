@@ -22,7 +22,7 @@ export function AppointmentDetail({
   onEdit,
   onPatchStatus,
 }: AppointmentDetailProps) {
-  const avatar = getAvatarConfig(sel.customerId?.firstName, sel.customerId?.lastName);
+  const avatar = getAvatarConfig(sel.customerId?.name);
   const statusConfig = SC[sel.status] || SC.pending;
 
   return (
@@ -91,7 +91,7 @@ export function AppointmentDetail({
           {avatar.initials}
         </div>
         <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
-          {`${sel.customerId?.firstName || ""} ${sel.customerId?.lastName || ""}`}
+          {`${sel.customerId?.name || ""}`}
         </span>
         <span style={{ fontSize: 12, color: "#9ca3af" }}>{sel.customerId?.phone}</span>
         <Chip size="sm" variant="flat" color={statusConfig.color}>

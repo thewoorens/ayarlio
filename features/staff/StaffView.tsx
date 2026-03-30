@@ -1,113 +1,57 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useDisclosure, Button, Checkbox } from "@heroui/react";
 import { UserPlus, Trash2, Search, X } from "lucide-react";
-import useSWR from "swr";
 
 import { StaffListItem } from "./components/StaffListItem";
 import { StaffDetail } from "./components/StaffDetail";
 import { AddStaffModal } from "./modals/AddStaffModal";
 import { EditStaffModal } from "./modals/EditStaffModal";
 import { DeleteStaffModal } from "./modals/DeleteStaffModal";
-import {
-  Staff,
-  ApiListResponse,
-  EditableStaff,
-  FONT,
-  EMPTY_STAFF,
-} from "./types";
-
-const fetcher = async <T,>(url: string): Promise<T> => {
-  const res = await fetch(url);
-  return res.json() as Promise<T>;
-};
+import { useStaff } from "./hooks/useStaff";
+import { Staff, EditableStaff, EMPTY_STAFF } from "./types";
 
 export default function StaffView() {
-  const { data: response, mutate, isLoading } = useSWR<ApiListResponse<Staff>>(
-    "/api/tenant/staff",
-    fetcher
-  );
-  const staffList = useMemo<Staff[]>(() => response?.data ?? [], [response]);
+  const {
+    staffList,
+    filteredStaff,
+    sel,
+    isLoading,
+    isSaving,
+    search,
+    setSearch,
+    selected,
+    setSelected,
+    checked,
+    setChecked,
+    allChecked,
+    toggleOne,
+    toggleAll,
+    addStaff,
+    updateStaff,
+    deleteStaff,
+  } = useStaff();
 
-  // ── Filters & selection ────────────────────────────────────────
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
-  const [checked, setChecked] = useState<Set<string>>(new Set());
-
-  const sel = staffList.find((s) => s._id === selected) ?? null;
-
-  const filteredStaff = useMemo(() => {
-    const q = search.toLowerCase();
-    return staffList.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.role.toLowerCase().includes(q) ||
-        s.email.toLowerCase().includes(q) ||
-        (s.phone || "").toLowerCase().includes(q)
-    );
-  }, [staffList, search]);
-
-  const allChecked =
-    filteredStaff.length > 0 && filteredStaff.every((s) => checked.has(s._id));
-
-  const toggleOne = (id: string) =>
-    setChecked((p) => {
-      const n = new Set(p);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
-
-  const toggleAll = () =>
-    setChecked(allChecked ? new Set() : new Set(filteredStaff.map((s) => s._id)));
-
-  // ── Add modal ──────────────────────────────────────────────────
   const addD = useDisclosure();
   const [addForm, setAddForm] = useState<EditableStaff>({ ...EMPTY_STAFF });
-  const [isSaving, setIsSaving] = useState(false);
 
-  async function addStaff() {
-    if (!addForm.name.trim()) return;
-    setIsSaving(true);
-    try {
-      await fetch("/api/tenant/staff", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addForm),
-      });
-      mutate();
+  const handleAdd = async () => {
+    const success = await addStaff(addForm);
+    if (success) {
       setAddForm({ ...EMPTY_STAFF });
       addD.onClose();
-    } catch (err) {
-      console.error("Failed to add staff", err);
-    } finally {
-      setIsSaving(false);
     }
-  }
+  };
 
-  // ── Edit modal ─────────────────────────────────────────────────
   const editD = useDisclosure();
   const [editForm, setEditForm] = useState<Staff | null>(null);
 
-  async function saveEdit() {
+  const handleEdit = async () => {
     if (!editForm) return;
-    setIsSaving(true);
-    try {
-      await fetch(`/api/tenant/staff/${editForm._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
-      });
-      mutate();
-      editD.onClose();
-    } catch (err) {
-      console.error("Failed to edit staff", err);
-    } finally {
-      setIsSaving(false);
-    }
-  }
+    const success = await updateStaff(editForm._id, editForm);
+    if (success) editD.onClose();
+  };
 
-  // ── Delete modal ───────────────────────────────────────────────
   const delD = useDisclosure();
   const [delIds, setDelIds] = useState<string[]>([]);
 
@@ -117,41 +61,28 @@ export default function StaffView() {
   };
 
   const confirmDel = async () => {
-    for (const id of delIds) {
-      await fetch(`/api/tenant/staff/${id}`, { method: "DELETE" });
-    }
-    mutate();
-    if (selected && delIds.includes(selected)) setSelected(null);
-    setChecked(new Set());
-    delD.onClose();
+    const success = await deleteStaff(delIds);
+    if (success) delD.onClose();
   };
 
   return (
-    <div
-      className="p-6 h-[calc(100vh-64px)] flex flex-col gap-5"
-      style={{ fontFamily: FONT }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between shrink-0">
+    <div className="p-4 md:p-6 h-full flex flex-col gap-4 md:gap-5">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white rounded-xl p-4 md:p-5 shadow-sm">
         <div>
-          <h1
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              margin: 0,
-            }}
-          >
+          <h1 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">
             Personel
           </h1>
-          <p style={{ fontSize: 13, color: "#9ca3af", margin: "2px 0 0" }}>
+          <p className="text-xs text-zinc-400">
             {staffList.length} çalışan ·{" "}
             {staffList.filter((s) => s.status === "active").length} aktif
           </p>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex flex-wrap gap-2">
           {checked.size > 0 && (
             <Button
+              size="sm"
               color="danger"
               variant="flat"
               startContent={<Trash2 size={14} />}
@@ -160,16 +91,15 @@ export default function StaffView() {
               {checked.size} Seçiliyi Sil
             </Button>
           )}
+
           <Button
+            size="sm"
+            radius="lg"
+            color="primary"
             startContent={<UserPlus size={15} />}
             onPress={() => {
               setAddForm({ ...EMPTY_STAFF });
               addD.onOpen();
-            }}
-            style={{
-              background: "linear-gradient(135deg,#3b82f6,#2563eb)",
-              fontWeight: 600,
-              color: "#fff",
             }}
           >
             Personel Ekle
@@ -177,67 +107,46 @@ export default function StaffView() {
         </div>
       </div>
 
-      <div className="flex gap-4 flex-1 min-h-0">
-        {/* Sol liste */}
-        <div className="flex flex-col gap-3" style={{ width: 280, flexShrink: 0 }}>
-          {/* Search */}
-          <div
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
-            style={{ background: "#fff", border: "1px solid #e8eaf0" }}
-          >
-            <Search size={14} color="#d1d5db" />
+      {/* CONTENT */}
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
+        {/* LEFT PANEL */}
+        <div className="flex flex-col gap-3 w-full lg:w-80 xl:w-96 bg-white rounded-xl p-4 md:p-5 shadow-sm">
+          {/* SEARCH */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800">
+            <Search size={14} className="text-zinc-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Personel ara…"
-              autoComplete="off"
-              style={{
-                background: "transparent",
-                outline: "none",
-                fontSize: 13,
-                width: "100%",
-                color: "#1f2937",
-                border: "none",
-              }}
+              className="bg-transparent outline-none text-sm w-full"
             />
             {search && (
-              <button
-                onClick={() => setSearch("")}
-                style={{ background: "none", border: "none", cursor: "pointer" }}
-              >
-                <X size={13} color="#9ca3af" />
+              <button onClick={() => setSearch("")}>
+                <X size={13} className="text-zinc-400" />
               </button>
             )}
           </div>
 
-          {/* Select all */}
+          {/* CHECK ALL */}
           {filteredStaff.length > 0 && (
-            <div className="flex items-center gap-2 px-1">
+            <div className="flex items-center gap-2">
               <Checkbox
                 isSelected={allChecked}
                 onValueChange={toggleAll}
                 size="sm"
               />
-              <span style={{ fontSize: 11, color: "#9ca3af" }}>
+              <span className="text-xs text-zinc-400">
                 {checked.size > 0 ? `${checked.size} seçili` : "Tümünü seç"}
               </span>
             </div>
           )}
 
-          {/* Staff list */}
-          <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+          {/* LIST */}
+          <div className="flex-1 overflow-y-auto space-y-2">
             {isLoading && (
-              <p
-                style={{
-                  fontSize: 13,
-                  textAlign: "center",
-                  color: "#9ca3af",
-                  padding: "12px 0",
-                }}
-              >
-                Personel yükleniyor...
-              </p>
+              <p className="text-sm text-center text-zinc-400">Yükleniyor...</p>
             )}
+
             {filteredStaff.map((s) => (
               <StaffListItem
                 key={s._id}
@@ -252,44 +161,45 @@ export default function StaffView() {
           </div>
         </div>
 
-        {/* Sağ detay */}
-        {sel ? (
-          <StaffDetail
-            staff={sel}
-            onEdit={(s) => {
-              setEditForm({ ...s });
-              editD.onOpen();
-            }}
-            onDelete={(id) => askDel([id])}
-          />
-        ) : (
-          <div
-            className="flex-1 rounded-2xl flex items-center justify-center"
-            style={{ background: "#fff", border: "1px solid #e8eaf0" }}
-          >
-            <p style={{ color: "#d1d5db", fontSize: 13 }}>Bir personel seçin</p>
-          </div>
-        )}
+        {/* RIGHT PANEL */}
+        <div className="flex-1 min-h-[300px]">
+          {sel ? (
+            <StaffDetail
+              staff={sel}
+              onEdit={(s) => {
+                setEditForm({ ...s });
+                editD.onOpen();
+              }}
+              onDelete={(id) => askDel([id])}
+            />
+          ) : (
+            <div className="h-full rounded-xl flex items-center justify-center bg-white border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800">
+              <p className="text-zinc-400 text-sm">Bir personel seçin</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Modals */}
+      {/* MODALS */}
       <AddStaffModal
         isOpen={addD.isOpen}
         onClose={addD.onClose}
         form={addForm}
         setForm={setAddForm}
         isSaving={isSaving}
-        onSave={addStaff}
+        onSave={handleAdd}
       />
+
       <EditStaffModal
         isOpen={editD.isOpen}
         onClose={editD.onClose}
         form={editForm}
         setForm={setEditForm}
         isSaving={isSaving}
-        onSave={saveEdit}
+        onSave={handleEdit}
         onDelete={(id) => askDel([id])}
       />
+
       <DeleteStaffModal
         isOpen={delD.isOpen}
         onClose={delD.onClose}

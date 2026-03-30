@@ -1,5 +1,11 @@
 "use client";
-import { Chip, Spinner, ButtonGroup, Button, Tooltip as HerouiTooltip } from "@heroui/react";
+import {
+  Chip,
+  Spinner,
+  ButtonGroup,
+  Button,
+  Tooltip as HerouiTooltip,
+} from "@heroui/react";
 import { Check, CircleX, CreditCardIcon, Edit2Icon } from "lucide-react";
 import {
   Appointment,
@@ -83,26 +89,43 @@ export function AppointmentTable({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: "center", padding: 48, color: "#9ca3af", fontSize: 14 }}>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    padding: 48,
+                    color: "#9ca3af",
+                    fontSize: 14,
+                  }}
+                >
                   <Spinner />
                 </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: "center", padding: 48, color: "#9ca3af", fontSize: 14 }}>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    padding: 48,
+                    color: "#9ca3af",
+                    fontSize: 14,
+                  }}
+                >
                   Eşleşen randevu bulunamadı
                 </td>
               </tr>
             ) : (
               rows.map((a) => {
                 const isSel = selId === a._id;
-                const cFirst = a.customerId?.firstName || "";
-                const cLast = a.customerId?.lastName || "";
-                const cName = `${cFirst} ${cLast}`;
-                const avatar = getAvatarConfig(cFirst, cLast);
+                const cFirst = a.customerId?.name || "";
+                const cName = `${cFirst}`;
+                const avatar = getAvatarConfig(cFirst);
                 const stName = a.staffId?.name || "Bilinmeyen";
                 const svcName = a.serviceId?.name || "";
-                const price = a.serviceId?.price ? `₺${a.serviceId.price}` : "-";
+                const price = a.serviceId?.price
+                  ? `₺${a.serviceId.price}`
+                  : "-";
                 const code = a.code || "-";
                 const statusConfig = SC[a.status] || SC.pending;
 
@@ -119,7 +142,13 @@ export function AppointmentTable({
                     }}
                   >
                     <td style={{ padding: "12px 16px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
                         <div
                           style={{
                             width: 30,
@@ -138,63 +167,167 @@ export function AppointmentTable({
                         >
                           {avatar.initials}
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#111827", whiteSpace: "nowrap" }}>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "#111827",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {cName}
                         </span>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 16px", fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: 13,
+                        color: "#6b7280",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {svcName}
                     </td>
-                    <td style={{ padding: "12px 16px", fontSize: 13, color: "#9ca3af", whiteSpace: "nowrap" }}>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: 13,
+                        color: "#9ca3af",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {stName}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: "#374151" }}>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: "#374151",
+                        }}
+                      >
                         {formatDateTR(a.startTime)}
                       </div>
-                      <div style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#9ca3af",
+                          fontFamily: "monospace",
+                        }}
+                      >
                         {formatTimeTR(a.startTime)}
                       </div>
                     </td>
-                    <td style={{ padding: "12px 16px", fontSize: 14, color: "#0d6efd", fontStyle: "bold" }}>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: 14,
+                        color: "#0d6efd",
+                        fontStyle: "bold",
+                      }}
+                    >
                       {code}
                     </td>
-                    <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, color: "#374151" }}>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "#374151",
+                      }}
+                    >
                       {price}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <Chip size="sm" variant="flat" color={statusConfig.color} style={{ fontSize: 11, fontWeight: 600 }}>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={statusConfig.color}
+                        style={{ fontSize: 11, fontWeight: 600 }}
+                      >
                         {statusConfig.label}
                       </Chip>
                     </td>
-                    <td style={{ padding: "12px 16px" }} onClick={(e) => e.stopPropagation()}>
-                      <div className="abtn" style={{ display: "flex", gap: 4, opacity: 0 }}>
+                    <td
+                      style={{ padding: "12px 16px" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div
+                        className="abtn"
+                        style={{ display: "flex", gap: 4, opacity: 0 }}
+                      >
                         {a.status === "pending" ? (
-                          <div style={{ display: "flex", borderRadius: 10, overflow: "hidden" }}>
-                            <HerouiTooltip closeDelay={0} content={<span>Düzenle</span>}>
+                          <div
+                            style={{
+                              display: "flex",
+                              borderRadius: 10,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <HerouiTooltip
+                              closeDelay={0}
+                              content={<span>Düzenle</span>}
+                            >
                               <button
                                 type="button"
                                 onClick={() => onEdit(a)}
-                                style={{ width: 40, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "#0d6efd", border: "none", cursor: "pointer" }}
+                                style={{
+                                  width: 40,
+                                  height: 32,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "#0d6efd",
+                                  border: "none",
+                                  cursor: "pointer",
+                                }}
                               >
                                 <Edit2Icon size={16} color="white" />
                               </button>
                             </HerouiTooltip>
-                            <HerouiTooltip closeDelay={0} content={<span>Onayla</span>}>
+                            <HerouiTooltip
+                              closeDelay={0}
+                              content={<span>Onayla</span>}
+                            >
                               <button
                                 type="button"
-                                onClick={() => onPatchStatus(a._id, "confirmed")}
-                                style={{ width: 40, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "#22c55e", border: "none", cursor: "pointer" }}
+                                onClick={() =>
+                                  onPatchStatus(a._id, "confirmed")
+                                }
+                                style={{
+                                  width: 40,
+                                  height: 32,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "#22c55e",
+                                  border: "none",
+                                  cursor: "pointer",
+                                }}
                               >
                                 <Check size={16} color="white" />
                               </button>
                             </HerouiTooltip>
-                            <HerouiTooltip closeDelay={0} content={<span>İptal Et</span>}>
+                            <HerouiTooltip
+                              closeDelay={0}
+                              content={<span>İptal Et</span>}
+                            >
                               <button
                                 type="button"
-                                onClick={() => onPatchStatus(a._id, "cancelled")}
-                                style={{ width: 40, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "#e91e63", border: "none", cursor: "pointer" }}
+                                onClick={() =>
+                                  onPatchStatus(a._id, "cancelled")
+                                }
+                                style={{
+                                  width: 40,
+                                  height: 32,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "#e91e63",
+                                  border: "none",
+                                  cursor: "pointer",
+                                }}
                               >
                                 <CircleX size={16} color="white" />
                               </button>
@@ -203,26 +336,59 @@ export function AppointmentTable({
                         ) : (
                           <ButtonGroup>
                             {a.status !== "completed" && (
-                              <HerouiTooltip closeDelay={0} content={<span>Düzenle</span>}>
-                                <Button isIconOnly size="sm" className="p-2" color="primary" onPress={() => onEdit(a)}>
+                              <HerouiTooltip
+                                closeDelay={0}
+                                content={<span>Düzenle</span>}
+                              >
+                                <Button
+                                  isIconOnly
+                                  size="sm"
+                                  className="p-2"
+                                  color="primary"
+                                  onPress={() => onEdit(a)}
+                                >
                                   <Edit2Icon size={18} />
                                 </Button>
                               </HerouiTooltip>
                             )}
-                            {a.status !== "confirmed" && a.status !== "completed" && (
-                              <HerouiTooltip closeDelay={0} content={<span>Onayla</span>}>
-                                <Button isIconOnly size="sm" className="p-2" color="success" onPress={() => onPatchStatus(a._id, "confirmed")}>
-                                  <Check size={18} color="white" />
-                                </Button>
-                              </HerouiTooltip>
-                            )}
-                            {a.status !== "cancelled" && a.status !== "completed" && (
-                              <HerouiTooltip closeDelay={0} content={<span>İptal Et</span>}>
-                                <Button isIconOnly size="sm" className="p-2" color="danger" onPress={() => onPatchStatus(a._id, "cancelled")}>
-                                  <CircleX size={18} />
-                                </Button>
-                              </HerouiTooltip>
-                            )}
+                            {a.status !== "confirmed" &&
+                              a.status !== "completed" && (
+                                <HerouiTooltip
+                                  closeDelay={0}
+                                  content={<span>Onayla</span>}
+                                >
+                                  <Button
+                                    isIconOnly
+                                    size="sm"
+                                    className="p-2"
+                                    color="success"
+                                    onPress={() =>
+                                      onPatchStatus(a._id, "confirmed")
+                                    }
+                                  >
+                                    <Check size={18} color="white" />
+                                  </Button>
+                                </HerouiTooltip>
+                              )}
+                            {a.status !== "cancelled" &&
+                              a.status !== "completed" && (
+                                <HerouiTooltip
+                                  closeDelay={0}
+                                  content={<span>İptal Et</span>}
+                                >
+                                  <Button
+                                    isIconOnly
+                                    size="sm"
+                                    className="p-2"
+                                    color="danger"
+                                    onPress={() =>
+                                      onPatchStatus(a._id, "cancelled")
+                                    }
+                                  >
+                                    <CircleX size={18} />
+                                  </Button>
+                                </HerouiTooltip>
+                              )}
                           </ButtonGroup>
                         )}
                       </div>
@@ -235,11 +401,11 @@ export function AppointmentTable({
         </table>
       </div>
       <div
+        className="flex flex-col gap-4 sm:flex sm:flex-row"
         style={{
           padding: "10px 16px",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
           borderTop: "1px solid #f0f2f7",
         }}
       >
@@ -247,8 +413,12 @@ export function AppointmentTable({
           {rows.length} sonuç gösteriliyor
         </span>
         <span style={{ fontSize: 12, color: "#9ca3af" }}>
-          Randevular 14 gün sonrasında otomatik olarak silinir. Daha uzun süre randevuları tutmak için planınızı
-          <Link href="/pricing" className="text-blue-400 ml-1">
+          Randevular 14 gün sonrasında otomatik olarak silinir. Daha uzun süre
+          randevuları tutmak için planınızı
+          <Link
+            href="https://ayarlio.com/fiyatlandirma"
+            className="text-blue-400 ml-1"
+          >
             hemen yükseltin.
           </Link>
         </span>

@@ -7,6 +7,7 @@ import { AppointmentDetail } from "./components/AppointmentDetail";
 import { AppointmentModal } from "./modals/AppointmentModal";
 import { TabValue, TABS, toIsoDateString, toTimeString } from "./types";
 import { useAppointmentStore } from "./store/useAppointmentStore";
+import { Plus } from "lucide-react";
 
 export default function AppointmentsView() {
   const store = useAppointmentStore();
@@ -19,7 +20,7 @@ export default function AppointmentsView() {
     () =>
       store.appointments.filter((a) => {
         const s = store.search.toLowerCase();
-        const cName = `${a.customerId?.firstName || ""} ${a.customerId?.lastName || ""}`.toLowerCase();
+        const cName = `${a.customerId?.name || ""}`.toLowerCase();
         const sName = (a.serviceId?.name || "").toLowerCase();
         if (s && !cName.includes(s) && !sName.includes(s)) return false;
         if (store.tab !== "all" && a.status !== store.tab) return false;
@@ -82,14 +83,11 @@ export default function AppointmentsView() {
           </div>
           <Button
             onPress={openAdd}
-            style={{
-              background: "linear-gradient(135deg,#3b82f6,#2563eb)",
-              boxShadow: "0 2px 12px rgba(59,130,246,0.3)",
-              fontWeight: 600,
-              color: "#fff",
-            }}
+            radius="lg"
+            color="primary"
+            startContent={<Plus size={14} />}
           >
-            + Yeni Randevu
+            Yeni Randevu
           </Button>
         </div>
 

@@ -2,8 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ICustomer extends Document {
     tenantId: mongoose.Types.ObjectId;
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
     phone?: string;
     notes?: string;
@@ -20,14 +19,9 @@ const CustomerSchema = new Schema<ICustomer>(
             required: [true, 'Tenant is required'],
             index: true,
         },
-        firstName: {
+        name: {
             type: String,
-            required: [true, 'First name is required'],
-            trim: true,
-        },
-        lastName: {
-            type: String,
-            required: [true, 'Last name is required'],
+            required: [true, 'Name is required'],
             trim: true,
         },
         email: {
@@ -48,18 +42,16 @@ const CustomerSchema = new Schema<ICustomer>(
         isActive: {
             type: Boolean,
             default: true,
-        },
+        }
     },
     {
         timestamps: true,
     }
 );
 
-// Compound index to ensure uniqueness of customer email per tenant
 CustomerSchema.index({ tenantId: 1, email: 1 }, { unique: true });
 
-// Index for quick search by name or phone
-CustomerSchema.index({ tenantId: 1, lastName: 1, firstName: 1 });
+CustomerSchema.index({ tenantId: 1, name: 1 });
 CustomerSchema.index({ tenantId: 1, phone: 1 });
 
 const Customer = mongoose.models.Customer || mongoose.model<ICustomer>('Customer', CustomerSchema);

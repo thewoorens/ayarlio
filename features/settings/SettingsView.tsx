@@ -3,47 +3,95 @@ import { useState, useEffect } from "react";
 import { Spinner } from "@heroui/react";
 import { IsletmeTab } from "./components/BusinessTab";
 import { useSettings } from "./hooks/useSettings";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const businessSchema = z.object({
+  name: z
+    .string()
+    .min(2, "İşletme adı en az 2 karakter olmalıdır.")
+    .max(100, "İşletme adı 100 karakterden uzun olamaz.")
+    .trim(),
+  phone: z
+    .string()
+    .regex(/^(\+90|0)?5\d{9}$/, "Lütfen geçerli bir Türkiye telefon numarası girin (örn: 05XXXXXXXXX).")
+    .trim(),
+  email: z
+    .string()
+    .email("Lütfen geçerli bir e-posta adresi girin.")
+    .trim()
+    .toLowerCase(),
+  website: z
+    .string()
+    .trim()
+    .url("Lütfen geçerli bir web sitesi URL'si girin (örn: https://ayarlio.com).")
+    .or(z.literal(""))
+    .optional(),
+  address: z.string().trim().optional(),
+  description: z.string().trim().optional(),
+  showCategoriesFirst: z.boolean(),
+});
+
+type BusinessFormData = z.infer<typeof businessSchema>;
 
 export default function SettingsView() {
   const { data, isLoading } = useSettings();
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
-  const [bizName, setBizName] = useState("");
-  const [bizPhone, setBizPhone] = useState("");
-  const [bizEmail, setBizEmail] = useState("");
-  const [bizAddr, setBizAddr] = useState("");
-  const [bizDesc, setBizDesc] = useState("");
-  const [bizWeb, setBizWeb] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<BusinessFormData>({
+    resolver: zodResolver(businessSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+      website: "",
+      address: "",
+      description: "",
+      showCategoriesFirst: false,
+    },
+  });
 
   useEffect(() => {
     if (data) {
-      setBizName(data.name || "");
-      setBizPhone(data.phone || "");
-      setBizEmail(data.settings?.email || "");
-      setBizAddr(data.settings?.address || "");
-      setBizDesc(data.settings?.description || "");
-      setBizWeb(data.settings?.website || "");
+      reset({
+        name: data.name || "",
+        phone: data.phone || "",
+        email: data.settings?.email || "",
+        website: data.settings?.website || "",
+        address: data.settings?.address || "",
+        description: data.settings?.description || "",
+        showCategoriesFirst: Boolean(data.settings?.showCategoriesFirst),
+      });
     }
-  }, [data]);
+  }, [data, reset]);
 
-  const handleSave = async () => {
+  const onSave = async (formData: BusinessFormData) => {
     if (!data) return;
-    
+
     setIsSaving(true);
     try {
       const response = await fetch("/api/tenant/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: bizName,
-          phone: bizPhone,
+          name: formData.name,
+          phone: formData.phone,
           settings: {
             ...data.settings,
-            email: bizEmail,
-            address: bizAddr,
-            description: bizDesc,
-            website: bizWeb,
+            email: formData.email,
+            address: formData.address,
+            description: formData.description,
+            website: formData.website,
+            showCategoriesFirst: formData.showCategoriesFirst,
           },
         }),
       });
@@ -90,20 +138,12 @@ export default function SettingsView() {
       </div>
 
       <IsletmeTab
-        bizName={bizName}
-        setBizName={setBizName}
-        bizPhone={bizPhone}
-        setBizPhone={setBizPhone}
-        bizEmail={bizEmail}
-        setBizEmail={setBizEmail}
-        bizAddr={bizAddr}
-        setBizAddr={setBizAddr}
-        bizDesc={bizDesc}
-        setBizDesc={setBizDesc}
-        bizWeb={bizWeb}
-        setBizWeb={setBizWeb}
+        register={register}
+        errors={errors}
+        setValue={setValue}
+        watch={watch}
         saved={saved}
-        onSave={handleSave}
+        onSave={handleSubmit(onSave)}
       />
     </div>
   );
