@@ -415,7 +415,10 @@ export function AppointmentTable({
         <span style={{ fontSize: 12, color: "#9ca3af" }}>
           Randevular 14 gün sonrasında otomatik olarak silinir. Daha uzun süre
           randevuları tutmak için planınızı
-          <Link href="/pricing" className="text-blue-400 ml-1">
+          <Link
+            href="https://ayarlio.com/fiyatlandirma"
+            className="text-blue-400 ml-1"
+          >
             hemen yükseltin.
           </Link>
         </span>
