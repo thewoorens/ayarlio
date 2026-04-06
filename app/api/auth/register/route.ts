@@ -54,6 +54,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const existingPhone = await User.findOne({phone});
+    if (existingPhone) {
+      return NextResponse.json(
+        {success: false, message: "Bu telefon numarası zaten kullanılıyor"},
+        {status: 409}
+      );
+    }
+
     const passwordHash = await argon2.hash(password);
 
     const verifyTokenRaw = crypto.randomBytes(32).toString("hex");

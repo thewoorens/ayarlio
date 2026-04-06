@@ -73,6 +73,10 @@ export async function POST(req: NextRequest) {
     const start = new Date(startTime);
     const end = new Date(endTime);
 
+    // Adjust for Turkey timezone (UTC+3)
+    start.setHours(start.getHours() + 3);
+    end.setHours(end.getHours() + 3);
+
     // Validate working days
     const dayName = DAYS_MAP[start.getDay()];
     if (!staff.workDays.includes(dayName)) {
