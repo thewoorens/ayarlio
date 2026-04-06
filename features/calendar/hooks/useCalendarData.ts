@@ -28,7 +28,7 @@ export function useCalendarData(month: number, year: number) {
           const apptMonth = st.getMonth();
           const apptDay = st.getDate();
 
-          const timeStr = st.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+          const timeStr = `${String(st.getUTCHours()).padStart(2, "0")}:${String(st.getUTCMinutes()).padStart(2, "0")}`;
 
           const mappedAppt: Appointment = {
             id: appt._id,

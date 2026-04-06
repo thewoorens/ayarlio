@@ -103,7 +103,7 @@ export const formatDateTR = (dateStr: string): string => {
 export const formatTimeTR = (dateStr: string): string => {
   const d = new Date(dateStr);
   if (isNaN(d.valueOf())) return "";
-  return d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 };
 
 export const toIsoDateString = (dateStr: string): string | undefined => {
@@ -115,7 +115,7 @@ export const toIsoDateString = (dateStr: string): string | undefined => {
 export const toTimeString = (dateStr: string): string | undefined => {
   const d = new Date(dateStr);
   if (isNaN(d.valueOf())) return undefined;
-  return d.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
+  return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 };
 
 export const toIsoFromDateValue = (value: { year: number; month: number; day: number }): string =>

@@ -55,6 +55,7 @@ const UserSchema = new Schema<IUser>(
             type: String,
             required: [true, 'Phone number is required'],
             trim: true,
+            unique: true
         },
         passwordHash: {
             type: String,
