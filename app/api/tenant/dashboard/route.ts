@@ -5,7 +5,6 @@ import Customer from "@/models/Customer";
 import { verifyToken } from "@/lib/jwt";
 import Tenant from "@/models/Tenant";
 import User from "@/models/User";
-import Service from "@/models/Service";
 
 export async function GET(req: NextRequest) {
   try {

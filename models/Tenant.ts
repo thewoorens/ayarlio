@@ -1,4 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, {Schema, Document} from 'mongoose';
+
+export type PlanType = 'standard' | 'pro' | 'enterprise';
 
 export interface ITenant extends Document {
     name: string;
@@ -7,6 +9,10 @@ export interface ITenant extends Document {
     coordinates?: string;
     phone: string;
     isActive: boolean;
+    plan: PlanType;
+    trialEndsAt?: Date;
+    limits: Schema.Types.Mixed;
+    usage: Schema.Types.Mixed;
     workingHours: Record<string, any>;
     settings: Record<string, any>;
     createdAt: Date;
@@ -46,6 +52,23 @@ const TenantSchema = new Schema<ITenant>(
         isActive: {
             type: Boolean,
             default: true,
+        },
+        plan: {
+            type: String,
+            enum: ['standard', 'pro', 'enterprise'],
+            default: 'standard',
+        },
+        trialEndsAt: {
+            type: Date,
+        },
+        limits: {
+            type: Schema.Types.Mixed,
+            default: {},
+        },
+
+        usage: {
+            type: Schema.Types.Mixed,
+            default: {},
         },
         workingHours: {
             type: Schema.Types.Mixed,

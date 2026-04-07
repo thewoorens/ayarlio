@@ -20,6 +20,7 @@ import {
   ChevronRight,
   LayoutList,
 } from "lucide-react";
+import SuspendInfo from "./components/SuspendInfo";
 
 type StepRef = { id: number; label: string; icon: any; type: string };
 
@@ -295,6 +296,9 @@ export default function TenantPage({
   };
 
   const isCatFirst = Boolean(data?.tenant?.settings?.showCategoriesFirst);
+  const isExpired = Boolean(data?.tenant?.trialEndsAt && new Date(data.tenant.trialEndsAt) < new Date());
+
+
   const categories = Array.from(
     new Set(data?.services?.map((s: any) => s.category).filter(Boolean))
   ) as string[];
@@ -512,645 +516,654 @@ export default function TenantPage({
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
-        * { font-family: 'DM Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .serif { font-family: 'DM Serif Display', Georgia, serif; }
-        html, body { background: #fafaf8; overscroll-behavior: none; }
-      `}</style>
+      {isExpired ? (
+        <SuspendInfo tenantName={tenant?.name} tenantPhone={tenant?.phone} tenantEmail={tenant?.mail} />
+      ) : (
+        <div>
+          <>
+            <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+            * { font-family: 'DM Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+            .serif { font-family: 'DM Serif Display', Georgia, serif; }
+          html, body { background: #fafaf8; overscroll-behavior: none; }
+        `}</style>
 
-      <AnimatePresence>
-        {showIntro && <AyarlioIntro onDone={() => setShowIntro(false)} />}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {!showIntro && !loading && data?.tenant && (
-          <motion.div
-            key="page"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="min-h-screen min-h-dvh bg-[#fafaf8] flex flex-col"
-          >
-            {/* Dot pattern */}
-            <div
-              className="fixed inset-0 pointer-events-none"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle, #d4d4d4 1px, transparent 1px)",
-                backgroundSize: "28px 28px",
-                opacity: 0.35,
-              }}
-            />
+            <AnimatePresence>
+              {showIntro && <AyarlioIntro onDone={() => setShowIntro(false)} />}
+            </AnimatePresence>
 
-            {/* ── HEADER BAR (mobile sticky) ── */}
-            <motion.header
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: 0.1,
-                duration: 0.5,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="relative z-30 sticky top-0 bg-[#fafaf8]/90 backdrop-blur-md border-b border-neutral-200/70 px-5 pt-safe-top"
-            >
-              <div className="max-w-xl mx-auto flex flex-col py-4 gap-3">
-                {/* Business info row */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h1 className="serif text-xl leading-tight text-neutral-900 truncate">
-                      {tenant.name}
-                    </h1>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="flex items-center gap-1 text-xs text-neutral-400">
-                        <Sparkles size={10} className="text-neutral-300" />
-                        {tenant.industry}
-                      </span>
-                      {tenant.phone && (
-                        <span className="flex items-center gap-1 text-xs text-neutral-400">
-                          <Phone size={10} className="text-neutral-300" />
-                          {tenant.phone}
-                        </span>
-                      )}
+            <AnimatePresence>
+              {!showIntro && !loading && data?.tenant && (
+                <motion.div
+                  key="page"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="min-h-screen min-h-dvh bg-[#fafaf8] flex flex-col"
+                >
+                  {/* Dot pattern */}
+                  <div
+                    className="fixed inset-0 pointer-events-none"
+                    style={{
+                      backgroundImage:
+                        "radial-gradient(circle, #d4d4d4 1px, transparent 1px)",
+                      backgroundSize: "28px 28px",
+                      opacity: 0.35,
+                    }}
+                  />
+
+                  {/* ── HEADER BAR (mobile sticky) ── */}
+                  <motion.header
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      delay: 0.1,
+                      duration: 0.5,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    className="relative z-30 sticky top-0 bg-[#fafaf8]/90 backdrop-blur-md border-b border-neutral-200/70 px-5 pt-safe-top"
+                  >
+                    <div className="max-w-xl mx-auto flex flex-col py-4 gap-3">
+                      {/* Business info row */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h1 className="serif text-xl leading-tight text-neutral-900 truncate">
+                            {tenant.name}
+                          </h1>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <span className="flex items-center gap-1 text-xs text-neutral-400">
+                              <Sparkles size={10} className="text-neutral-300" />
+                              {tenant.industry}
+                            </span>
+                            {tenant.phone && (
+                              <span className="flex items-center gap-1 text-xs text-neutral-400">
+                                <Phone size={10} className="text-neutral-300" />
+                                {tenant.phone}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {/* Step counter pill */}
+                        <div className="shrink-0 bg-neutral-900 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full">
+                          {step}/{maxSteps}
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="h-1 bg-neutral-200 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full bg-neutral-900 rounded-full"
+                          animate={{ width: `${(step / maxSteps) * 100}%` }}
+                          transition={{ duration: 0.4, ease: "easeInOut" }}
+                        />
+                      </div>
+
+                      {/* Step labels */}
+                      <div className="flex items-center">
+                        {STEPS.map((s, idx) => {
+                          const done = step > s.id;
+                          const current = step === s.id;
+                          const Icon = s.icon;
+                          return (
+                            <div key={s.id} className="flex items-center flex-1">
+                              <div className="flex flex-col items-center gap-1">
+                                <motion.div
+                                  animate={{
+                                    backgroundColor: done
+                                      ? "#171717"
+                                      : current
+                                        ? "#fff"
+                                        : "#fff",
+                                    borderColor: done
+                                      ? "#171717"
+                                      : current
+                                        ? "#171717"
+                                        : "#e5e5e5",
+                                    scale: current ? 1.08 : 1,
+                                  }}
+                                  transition={{ duration: 0.25 }}
+                                  className="w-7 h-7 rounded-full border-2 flex items-center justify-center"
+                                >
+                                  {done ? (
+                                    <CheckCircle2 size={13} className="text-white" />
+                                  ) : (
+                                    <Icon
+                                      size={12}
+                                      className={
+                                        current
+                                          ? "text-neutral-900"
+                                          : "text-neutral-300"
+                                      }
+                                    />
+                                  )}
+                                </motion.div>
+                                <span
+                                  className={clsx(
+                                    "text-[9px] font-semibold tracking-wide transition-colors",
+                                    current
+                                      ? "text-neutral-800"
+                                      : done
+                                        ? "text-neutral-500"
+                                        : "text-neutral-300",
+                                  )}
+                                >
+                                  {s.label}
+                                </span>
+                              </div>
+                              {idx < STEPS.length - 1 && (
+                                <div className="flex-1 h-px mx-1 mb-4 bg-neutral-200 overflow-hidden relative">
+                                  <motion.div
+                                    className="absolute inset-y-0 left-0 bg-neutral-900"
+                                    animate={{ width: step > s.id ? "100%" : "0%" }}
+                                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </motion.header>
+
+                  {/* ── SUMMARY BAR ── */}
+                  <AnimatePresence>
+                    {(selectedCategory || selectedService || selectedStaff || selectedTime) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="relative z-20 border-b border-neutral-200/60 bg-white/70 backdrop-blur-sm overflow-hidden"
+                      >
+                        <div className="max-w-xl mx-auto px-5 py-2.5 flex flex-wrap gap-x-3 gap-y-1">
+                          {isCatFirst && selectedCategory && !selectedService && (
+                            <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                              <LayoutList size={11} className="text-neutral-400" />
+                              {selectedCategory}
+                            </span>
+                          )}
+                          {selectedService && (
+                            <span className="flex items-center gap-1.5 text-[11px]">
+                              <WalletCardsIcon
+                                size={11}
+                                className="text-neutral-400"
+                              />
+                              <span className="font-semibold text-neutral-700">
+                                {selectedService.name}
+                              </span>
+                              <span className="text-neutral-300">·</span>
+                              <span className="font-bold text-neutral-900">
+                                {selectedService.price} {selectedService.currency}
+                              </span>
+                            </span>
+                          )}
+                          {selectedStaff && (
+                            <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                              <Users size={11} className="text-neutral-400" />
+                              {selectedStaff.name}
+                            </span>
+                          )}
+                          {selectedDate && selectedTime && (
+                            <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                              <CalendarDays size={11} className="text-neutral-400" />
+                              {new Date(
+                                selectedDate + "T12:00:00",
+                              ).toLocaleDateString("tr-TR", {
+                                day: "numeric",
+                                month: "long",
+                              })}
+                              <span className="text-neutral-300">·</span>
+                              {selectedTime}
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* ── SCROLLABLE CONTENT ── */}
+                  <div className="relative z-20 flex-1 overflow-y-auto">
+                    <div className="max-w-xl mx-auto px-0 sm:px-4 py-4 pb-28">
+                      <div className="bg-white sm:rounded-3xl sm:border sm:border-neutral-200/80 sm:shadow-sm overflow-hidden">
+                        <div className="px-5 py-5 sm:px-7 sm:py-6">
+                          <AnimatePresence mode="wait" custom={direction}>
+                            {/* ── STEP: CATEGORY ── */}
+                            {currentStepType === "category" && (
+                              <SlideStep key="cat" dir={direction}>
+                                <StepHeader
+                                  icon={LayoutList}
+                                  title="Kategori Seçin"
+                                  subtitle="Almak istediğiniz hizmetin türünü seçin"
+                                />
+                                <motion.div
+                                  className="mt-4 space-y-2.5"
+                                  variants={listVariants}
+                                  initial="hidden"
+                                  animate="visible"
+                                >
+                                  {categories.length === 0 ? (
+                                    <div className="text-center py-12 text-neutral-400">
+                                      Kategori bulunamadı.
+                                    </div>
+                                  ) : (
+                                    categories.map((cat: string) => (
+                                      <motion.div key={cat} variants={itemVariants}>
+                                        <button
+                                          onClick={() => {
+                                            setSelectedCategory(cat);
+                                            setSelectedService(null);
+                                            goTo(step + 1);
+                                          }}
+                                          className={clsx(
+                                            "w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between",
+                                            selectedCategory === cat
+                                              ? "border-neutral-900 bg-neutral-900/5 shadow-sm"
+                                              : "border-neutral-200/60 bg-white hover:border-neutral-300 hover:bg-neutral-50/50"
+                                          )}
+                                        >
+                                          <div className="font-semibold text-neutral-800">{cat}</div>
+                                          <ChevronRight size={18} className="text-neutral-400" />
+                                        </button>
+                                      </motion.div>
+                                    ))
+                                  )}
+                                </motion.div>
+                              </SlideStep>
+                            )}
+
+                            {/* ── STEP: SERVICE ── */}
+                            {currentStepType === "service" && (
+                              <SlideStep key="srv" dir={direction}>
+                                <StepHeader
+                                  icon={WalletCardsIcon}
+                                  title="Hizmet Seçin"
+                                  subtitle="Almak istediğiniz hizmeti seçin"
+                                />
+                                <motion.div
+                                  className="mt-4 space-y-2.5"
+                                  variants={listVariants}
+                                  initial="hidden"
+                                  animate="visible"
+                                >
+                                  {services
+                                    .filter((service: any) => isCatFirst && selectedCategory ? service.category === selectedCategory : true)
+                                    .map((service: any) => (
+                                      <motion.div key={service._id} variants={itemVariants}>
+                                        <ServiceCard
+                                          service={service}
+                                          selected={selectedService?._id === service._id}
+                                          onSelect={() => setSelectedService(service)}
+                                        />
+                                      </motion.div>
+                                    ))}
+                                </motion.div>
+                              </SlideStep>
+                            )}
+
+                            {/* ── STEP: STAFF ── */}
+                            {currentStepType === "staff" && (
+                              <SlideStep key="stf" dir={direction}>
+                                <StepHeader
+                                  icon={Users}
+                                  title="Personel Seçin"
+                                  subtitle="Hizmetinizi alacağınız personeli seçin"
+                                />
+                                <motion.div
+                                  className="mt-4 space-y-2.5"
+                                  variants={listVariants}
+                                  initial="hidden"
+                                  animate="visible"
+                                >
+                                  {availableStaff.length === 0 ? (
+                                    <motion.div className="text-center py-12 text-neutral-400">
+                                      <Users size={28} className="mx-auto mb-2 opacity-20" />
+                                      <p className="text-sm">Bu hizmet için uygun personel yok.</p>
+                                    </motion.div>
+                                  ) : (
+                                    availableStaff.map((p: any) => (
+                                      <motion.div key={p._id} variants={itemVariants}>
+                                        <StaffCard
+                                          person={p}
+                                          selected={selectedStaff?._id === p._id}
+                                          onSelect={() => setSelectedStaff(p)}
+                                        />
+                                      </motion.div>
+                                    ))
+                                  )}
+                                </motion.div>
+                              </SlideStep>
+                            )}
+
+                            {/* ── STEP: DATE & TIME ── */}
+                            {currentStepType === "datetime" && (
+                              <SlideStep key="dt" dir={direction}>
+                                <StepHeader
+                                  icon={CalendarDays}
+                                  title="Tarih & Saat"
+                                  subtitle="Randevu tarihinizi belirleyin"
+                                />
+                                <div className="mt-4 space-y-5">
+                                  {/* Custom Calendar */}
+                                  <div className="bg-neutral-50 rounded-2xl border border-neutral-100 p-4">
+                                    <CalendarPicker
+                                      value={selectedDate}
+                                      isUnavailable={isUnavailable}
+                                      onChange={(iso) => {
+                                        setSelectedDate(iso);
+                                        setSelectedTime(null);
+                                      }}
+                                    />
+                                  </div>
+
+                                  {/* Time slots */}
+                                  <AnimatePresence>
+                                    {selectedDate ? (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                      >
+                                        <div className="flex items-center justify-between mb-3">
+                                          <label className="text-[10px] font-semibold tracking-[0.18em] uppercase text-neutral-400">
+                                            Saat Seçin
+                                          </label>
+                                          <span className="text-[10px] text-neutral-400">
+                                            {new Date(selectedDate + "T12:00:00").toLocaleDateString("tr-TR", {
+                                              weekday: "long",
+                                              day: "numeric",
+                                              month: "long",
+                                            })}
+                                          </span>
+                                        </div>
+                                        <motion.div
+                                          className="grid grid-cols-4 sm:grid-cols-6 gap-2"
+                                          variants={listVariants}
+                                          initial="hidden"
+                                          animate="visible"
+                                        >
+                                          {timeSlots.map((time) => {
+                                            const ok = availability[time];
+                                            const sel = selectedTime === time;
+                                            return (
+                                              <motion.button
+                                                key={time}
+                                                variants={{
+                                                  hidden: { opacity: 0, scale: 0.82 },
+                                                  visible: {
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                    transition: { duration: 0.2 },
+                                                  },
+                                                }}
+                                                disabled={!ok}
+                                                onClick={() => ok && setSelectedTime(time)}
+                                                whileHover={ok ? { scale: 1.06, y: -1 } : {}}
+                                                whileTap={ok ? { scale: 0.94 } : {}}
+                                                className={clsx(
+                                                  "py-2.5 rounded-xl text-xs font-semibold border transition-all duration-150",
+                                                  sel
+                                                    ? "bg-neutral-900 text-white border-neutral-900 shadow-md"
+                                                    : ok
+                                                      ? "bg-white text-neutral-700 border-neutral-200 hover:border-neutral-500 hover:text-neutral-900"
+                                                      : "bg-neutral-50/80 text-neutral-300 border-neutral-100 cursor-not-allowed line-through decoration-neutral-300",
+                                                )}
+                                              >
+                                                {time}
+                                              </motion.button>
+                                            );
+                                          })}
+                                        </motion.div>
+                                        {/* Legend */}
+                                        <div className="flex items-center gap-4 mt-3">
+                                          <span className="flex items-center gap-1.5 text-[10px] text-neutral-400">
+                                            <span className="w-3 h-3 rounded-md bg-white border border-neutral-200 inline-block" />
+                                            Müsait
+                                          </span>
+                                          <span className="flex items-center gap-1.5 text-[10px] text-neutral-400">
+                                            <span className="w-3 h-3 rounded-md bg-neutral-50 border border-neutral-100 inline-block" />
+                                            Dolu
+                                          </span>
+                                          <span className="flex items-center gap-1.5 text-[10px] text-neutral-400">
+                                            <span className="w-3 h-3 rounded-md bg-neutral-900 inline-block" />
+                                            Seçili
+                                          </span>
+                                        </div>
+                                      </motion.div>
+                                    ) : (
+                                      <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex flex-col items-center gap-2 py-6 text-neutral-300"
+                                      >
+                                        <CalendarDays size={24} className="opacity-40" />
+                                        <p className="text-xs text-neutral-400">Yukarıdan bir tarih seçin</p>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              </SlideStep>
+                            )}
+
+                            {/* ── STEP: FORM ── */}
+                            {currentStepType === "info" && (
+                              <SlideStep key="inf" dir={direction}>
+                                {submitMessage?.type === "success" ? (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.93 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                    className="text-center py-8 space-y-5"
+                                  >
+                                    <motion.div
+                                      initial={{ scale: 0, rotate: -20 }}
+                                      animate={{ scale: 1, rotate: 0 }}
+                                      transition={{ delay: 0.1, type: "spring", stiffness: 220, damping: 14 }}
+                                      className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mx-auto shadow-lg"
+                                    >
+                                      <CheckCircle2 size={28} className="text-white" />
+                                    </motion.div>
+                                    <div>
+                                      <h3 className="serif text-2xl text-neutral-900">Randevunuz Alındı</h3>
+                                      <p className="text-neutral-500 text-sm mt-1.5">{submitMessage.text}</p>
+                                    </div>
+                                    <div className="bg-neutral-50 rounded-2xl border border-neutral-100 p-4 text-left space-y-3">
+                                      {[
+                                        { label: "Hizmet", value: selectedService?.name },
+                                        { label: "Personel", value: selectedStaff?.name },
+                                        {
+                                          label: "Tarih",
+                                          value: selectedDate
+                                            ? new Date(selectedDate + "T12:00:00").toLocaleDateString("tr-TR", {
+                                              day: "numeric",
+                                              month: "long",
+                                              year: "numeric",
+                                            })
+                                            : "",
+                                        },
+                                        { label: "Saat", value: selectedTime ?? "" },
+                                        { label: "Tutar", value: `${selectedService?.price} ${selectedService?.currency}` },
+                                      ].map(({ label, value }) => (
+                                        <div key={label} className="flex justify-between text-sm">
+                                          <span className="text-neutral-400">{label}</span>
+                                          <span className="font-semibold text-neutral-800">{value}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <Button
+                                      variant="flat"
+                                      className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-xl font-medium text-sm w-full"
+                                      onPress={() => window.location.reload()}
+                                    >
+                                      Yeni Randevu Oluştur
+                                    </Button>
+                                  </motion.div>
+                                ) : (
+                                  <>
+                                    <StepHeader icon={UserCheck} title="Bilgileriniz" subtitle="Randevuyu tamamlamak için bilgilerinizi girin" />
+                                    <motion.div className="mt-4 space-y-3" variants={listVariants} initial="hidden" animate="visible">
+                                      {[
+                                        { label: "Ad Soyad", key: "name", type: "text", placeholder: "Ahmet Yılmaz" },
+                                        { label: "Telefon", key: "phone", type: "tel", placeholder: "05XX XXX XX XX" },
+                                        { label: "E-posta", key: "email", type: "email", placeholder: "ornek@mail.com" },
+                                      ].map(({ label, key, type, placeholder }) => (
+                                        <motion.div key={key}>
+                                          <Input
+                                            label={label}
+                                            type={type}
+                                            placeholder={placeholder}
+                                            variant="bordered"
+                                            isRequired
+                                            value={(form as any)[key]}
+                                            onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                                            classNames={{
+                                              label: "text-neutral-500 text-sm",
+                                              input: "text-neutral-900 text-sm placeholder:text-neutral-300",
+                                              inputWrapper: "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
+                                            }}
+                                          />
+                                        </motion.div>
+                                      ))}
+                                      <motion.div>
+                                        <Textarea
+                                          label="Not (opsiyonel)"
+                                          placeholder="Eklemek istediğiniz bir not..."
+                                          variant="bordered"
+                                          value={form.note}
+                                          onChange={(e) => setForm({ ...form, note: e.target.value })}
+                                          classNames={{
+                                            label: "text-neutral-500 text-sm",
+                                            input: "text-neutral-900 text-sm placeholder:text-neutral-300",
+                                            inputWrapper: "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
+                                          }}
+                                          minRows={2}
+                                        />
+                                      </motion.div>
+                                    </motion.div>
+                                    <AnimatePresence>
+                                      {submitMessage?.type === "error" && (
+                                        <motion.div
+                                          initial={{ opacity: 0, height: 0 }}
+                                          animate={{ opacity: 1, height: "auto" }}
+                                          exit={{ opacity: 0, height: 0 }}
+                                          className="mt-3 px-4 py-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl"
+                                        >
+                                          {submitMessage.text}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </>
+                                )}
+                              </SlideStep>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  {/* Step counter pill */}
-                  <div className="shrink-0 bg-neutral-900 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full">
-                    {step}/{maxSteps}
-                  </div>
-                </div>
 
-                {/* Progress bar */}
-                <div className="h-1 bg-neutral-200 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-neutral-900 rounded-full"
-                    animate={{ width: `${(step / maxSteps) * 100}%` }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                  />
-                </div>
+                  {/* ── BOTTOM NAV BAR (fixed, app-like) ── */}
+                  {submitMessage?.type !== "success" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="fixed bottom-0 inset-x-0 z-40 pb-safe-bottom"
+                    >
+                      <div className="bg-white/90 backdrop-blur-xl border-t border-neutral-200/80 px-5 py-3 shadow-lg shadow-neutral-200/50">
+                        <div className="max-w-xl mx-auto flex items-center sm:justify-between gap-3">
+                          {/* Back */}
+                          {step > 1 ? (
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => goTo(step - 1)}
+                              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-100 text-neutral-600 text-sm font-medium hover:bg-neutral-200 transition-colors"
+                            >
+                              <ArrowLeft size={15} />
+                              Geri
+                            </motion.button>
+                          ) : (
+                            <div className="xs:hidden" />
+                          )}
 
-                {/* Step labels */}
-                <div className="flex items-center">
-                  {STEPS.map((s, idx) => {
-                    const done = step > s.id;
-                    const current = step === s.id;
-                    const Icon = s.icon;
-                    return (
-                      <div key={s.id} className="flex items-center flex-1">
-                        <div className="flex flex-col items-center gap-1">
-                          <motion.div
-                            animate={{
-                              backgroundColor: done
-                                ? "#171717"
-                                : current
-                                  ? "#fff"
-                                  : "#fff",
-                              borderColor: done
-                                ? "#171717"
-                                : current
-                                  ? "#171717"
-                                  : "#e5e5e5",
-                              scale: current ? 1.08 : 1,
-                            }}
-                            transition={{ duration: 0.25 }}
-                            className="w-7 h-7 rounded-full border-2 flex items-center justify-center"
-                          >
-                            {done ? (
-                              <CheckCircle2 size={13} className="text-white" />
-                            ) : (
-                              <Icon
-                                size={12}
-                                className={
-                                  current
-                                    ? "text-neutral-900"
-                                    : "text-neutral-300"
-                                }
-                              />
-                            )}
-                          </motion.div>
-                          <span
-                            className={clsx(
-                              "text-[9px] font-semibold tracking-wide transition-colors",
-                              current
-                                ? "text-neutral-800"
-                                : done
-                                  ? "text-neutral-500"
-                                  : "text-neutral-300",
-                            )}
-                          >
-                            {s.label}
-                          </span>
+                          {/* Summary center */}
+                          {selectedService && step > 1 && (
+                            <div className="hidden sm:flex flex-col items-center text-center">
+                              <span className="text-xs font-semibold text-neutral-800">
+                                {selectedService.name}
+                              </span>
+                              <span className="text-[10px] text-neutral-400">
+                                {selectedService.price} {selectedService.currency}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Next / Submit */}
+                          {step < maxSteps ? (
+                            <motion.button
+                              whileHover={{ scale: nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime) ? 1.02 : 1 }}
+                              whileTap={{ scale: nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime) ? 0.97 : 1 }}
+                              disabled={!nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime)}
+                              onClick={() => goTo(step + 1)}
+                              className={clsx(
+                                "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
+                                nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime)
+                                  ? "bg-neutral-900 text-white shadow-sm"
+                                  : "bg-neutral-200 text-neutral-400 cursor-not-allowed",
+                              )}
+                            >
+                              İleri
+                              <ArrowRight size={15} />
+                            </motion.button>
+                          ) : submitMessage?.type !== "error" ? (
+                            <motion.button
+                              whileHover={{ scale: !form.name || !form.phone || !form.email || isSubmitting ? 1 : 1.02 }}
+                              whileTap={{ scale: !form.name || !form.phone || !form.email || isSubmitting ? 1 : 0.97 }}
+                              disabled={!form.name || !form.phone || !form.email || isSubmitting}
+                              onClick={handleBookAppointment}
+                              className={clsx(
+                                "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
+                                (!form.name || !form.phone || !form.email || isSubmitting)
+                                  ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                                  : "bg-neutral-900 text-white shadow-sm",
+                              )}
+                            >
+                              {isSubmitting ? (
+                                <Spinner size="sm" color="white" />
+                              ) : (
+                                <>
+                                  Randevu Oluştur
+                                  <CheckCircle2 size={15} />
+                                </>
+                              )}
+                            </motion.button>
+                          ) : null}
                         </div>
-                        {idx < STEPS.length - 1 && (
-                          <div className="flex-1 h-px mx-1 mb-4 bg-neutral-200 overflow-hidden relative">
-                            <motion.div
-                              className="absolute inset-y-0 left-0 bg-neutral-900"
-                              animate={{ width: step > s.id ? "100%" : "0%" }}
-                              transition={{ duration: 0.4, ease: "easeInOut" }}
-                            />
-                          </div>
-                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.header>
 
-            {/* ── SUMMARY BAR ── */}
-            <AnimatePresence>
-              {(selectedCategory || selectedService || selectedStaff || selectedTime) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="relative z-20 border-b border-neutral-200/60 bg-white/70 backdrop-blur-sm overflow-hidden"
-                >
-                  <div className="max-w-xl mx-auto px-5 py-2.5 flex flex-wrap gap-x-3 gap-y-1">
-                    {isCatFirst && selectedCategory && !selectedService && (
-                      <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-                        <LayoutList size={11} className="text-neutral-400" />
-                        {selectedCategory}
-                      </span>
-                    )}
-                    {selectedService && (
-                      <span className="flex items-center gap-1.5 text-[11px]">
-                        <WalletCardsIcon
-                          size={11}
-                          className="text-neutral-400"
-                        />
-                        <span className="font-semibold text-neutral-700">
-                          {selectedService.name}
-                        </span>
-                        <span className="text-neutral-300">·</span>
-                        <span className="font-bold text-neutral-900">
-                          {selectedService.price} {selectedService.currency}
-                        </span>
-                      </span>
-                    )}
-                    {selectedStaff && (
-                      <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-                        <Users size={11} className="text-neutral-400" />
-                        {selectedStaff.name}
-                      </span>
-                    )}
-                    {selectedDate && selectedTime && (
-                      <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-                        <CalendarDays size={11} className="text-neutral-400" />
-                        {new Date(
-                          selectedDate + "T12:00:00",
-                        ).toLocaleDateString("tr-TR", {
-                          day: "numeric",
-                          month: "long",
-                        })}
-                        <span className="text-neutral-300">·</span>
-                        {selectedTime}
-                      </span>
-                    )}
-                  </div>
+                      {/* Ayarlio footer */}
+                      <div className="bg-white/80 backdrop-blur-xl border-t border-neutral-100/60 py-1.5 text-center">
+                        <a
+                          href="https://ayarlio.com"
+                          className="inline-flex items-center gap-1.5 text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors"
+                        >
+                          <span className="w-3 h-px bg-neutral-300" />
+                          <span style={{ fontFamily: "'DM Serif Display', Georgia, serif" }} className="font-normal text-neutral-500">
+                            ayarlio
+                          </span>
+                          <span className="tracking-widest uppercase">tarafından sunulmaktadır</span>
+                          <span className="w-3 h-px bg-neutral-300" />
+                        </a>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* ── SCROLLABLE CONTENT ── */}
-            <div className="relative z-20 flex-1 overflow-y-auto">
-              <div className="max-w-xl mx-auto px-0 sm:px-4 py-4 pb-28">
-                <div className="bg-white sm:rounded-3xl sm:border sm:border-neutral-200/80 sm:shadow-sm overflow-hidden">
-                  <div className="px-5 py-5 sm:px-7 sm:py-6">
-                    <AnimatePresence mode="wait" custom={direction}>
-                      {/* ── STEP: CATEGORY ── */}
-                      {currentStepType === "category" && (
-                        <SlideStep key="cat" dir={direction}>
-                          <StepHeader
-                            icon={LayoutList}
-                            title="Kategori Seçin"
-                            subtitle="Almak istediğiniz hizmetin türünü seçin"
-                          />
-                          <motion.div
-                            className="mt-4 space-y-2.5"
-                            variants={listVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {categories.length === 0 ? (
-                              <div className="text-center py-12 text-neutral-400">
-                                Kategori bulunamadı.
-                              </div>
-                            ) : (
-                              categories.map((cat: string) => (
-                                <motion.div key={cat} variants={itemVariants}>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedCategory(cat);
-                                      setSelectedService(null);
-                                      goTo(step + 1);
-                                    }}
-                                    className={clsx(
-                                      "w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between",
-                                      selectedCategory === cat
-                                        ? "border-neutral-900 bg-neutral-900/5 shadow-sm"
-                                        : "border-neutral-200/60 bg-white hover:border-neutral-300 hover:bg-neutral-50/50"
-                                    )}
-                                  >
-                                    <div className="font-semibold text-neutral-800">{cat}</div>
-                                    <ChevronRight size={18} className="text-neutral-400" />
-                                  </button>
-                                </motion.div>
-                              ))
-                            )}
-                          </motion.div>
-                        </SlideStep>
-                      )}
-
-                      {/* ── STEP: SERVICE ── */}
-                      {currentStepType === "service" && (
-                        <SlideStep key="srv" dir={direction}>
-                          <StepHeader
-                            icon={WalletCardsIcon}
-                            title="Hizmet Seçin"
-                            subtitle="Almak istediğiniz hizmeti seçin"
-                          />
-                          <motion.div
-                            className="mt-4 space-y-2.5"
-                            variants={listVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {services
-                              .filter((service: any) => isCatFirst && selectedCategory ? service.category === selectedCategory : true)
-                              .map((service: any) => (
-                              <motion.div key={service._id} variants={itemVariants}>
-                                <ServiceCard
-                                  service={service}
-                                  selected={selectedService?._id === service._id}
-                                  onSelect={() => setSelectedService(service)}
-                                />
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        </SlideStep>
-                      )}
-
-                      {/* ── STEP: STAFF ── */}
-                      {currentStepType === "staff" && (
-                        <SlideStep key="stf" dir={direction}>
-                          <StepHeader
-                            icon={Users}
-                            title="Personel Seçin"
-                            subtitle="Hizmetinizi alacağınız personeli seçin"
-                          />
-                          <motion.div
-                            className="mt-4 space-y-2.5"
-                            variants={listVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {availableStaff.length === 0 ? (
-                              <motion.div className="text-center py-12 text-neutral-400">
-                                <Users size={28} className="mx-auto mb-2 opacity-20" />
-                                <p className="text-sm">Bu hizmet için uygun personel yok.</p>
-                              </motion.div>
-                            ) : (
-                              availableStaff.map((p: any) => (
-                                <motion.div key={p._id} variants={itemVariants}>
-                                  <StaffCard
-                                    person={p}
-                                    selected={selectedStaff?._id === p._id}
-                                    onSelect={() => setSelectedStaff(p)}
-                                  />
-                                </motion.div>
-                              ))
-                            )}
-                          </motion.div>
-                        </SlideStep>
-                      )}
-
-                      {/* ── STEP: DATE & TIME ── */}
-                      {currentStepType === "datetime" && (
-                        <SlideStep key="dt" dir={direction}>
-                          <StepHeader
-                            icon={CalendarDays}
-                            title="Tarih & Saat"
-                            subtitle="Randevu tarihinizi belirleyin"
-                          />
-                          <div className="mt-4 space-y-5">
-                            {/* Custom Calendar */}
-                            <div className="bg-neutral-50 rounded-2xl border border-neutral-100 p-4">
-                              <CalendarPicker
-                                value={selectedDate}
-                                isUnavailable={isUnavailable}
-                                onChange={(iso) => {
-                                  setSelectedDate(iso);
-                                  setSelectedTime(null);
-                                }}
-                              />
-                            </div>
-
-                            {/* Time slots */}
-                            <AnimatePresence>
-                              {selectedDate ? (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 8 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                                >
-                                  <div className="flex items-center justify-between mb-3">
-                                    <label className="text-[10px] font-semibold tracking-[0.18em] uppercase text-neutral-400">
-                                      Saat Seçin
-                                    </label>
-                                    <span className="text-[10px] text-neutral-400">
-                                      {new Date(selectedDate + "T12:00:00").toLocaleDateString("tr-TR", {
-                                        weekday: "long",
-                                        day: "numeric",
-                                        month: "long",
-                                      })}
-                                    </span>
-                                  </div>
-                                  <motion.div
-                                    className="grid grid-cols-4 sm:grid-cols-6 gap-2"
-                                    variants={listVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                  >
-                                    {timeSlots.map((time) => {
-                                      const ok = availability[time];
-                                      const sel = selectedTime === time;
-                                      return (
-                                        <motion.button
-                                          key={time}
-                                          variants={{
-                                            hidden: { opacity: 0, scale: 0.82 },
-                                            visible: {
-                                              opacity: 1,
-                                              scale: 1,
-                                              transition: { duration: 0.2 },
-                                            },
-                                          }}
-                                          disabled={!ok}
-                                          onClick={() => ok && setSelectedTime(time)}
-                                          whileHover={ok ? { scale: 1.06, y: -1 } : {}}
-                                          whileTap={ok ? { scale: 0.94 } : {}}
-                                          className={clsx(
-                                            "py-2.5 rounded-xl text-xs font-semibold border transition-all duration-150",
-                                            sel
-                                              ? "bg-neutral-900 text-white border-neutral-900 shadow-md"
-                                              : ok
-                                                ? "bg-white text-neutral-700 border-neutral-200 hover:border-neutral-500 hover:text-neutral-900"
-                                                : "bg-neutral-50/80 text-neutral-300 border-neutral-100 cursor-not-allowed line-through decoration-neutral-300",
-                                          )}
-                                        >
-                                          {time}
-                                        </motion.button>
-                                      );
-                                    })}
-                                  </motion.div>
-                                  {/* Legend */}
-                                  <div className="flex items-center gap-4 mt-3">
-                                    <span className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                                      <span className="w-3 h-3 rounded-md bg-white border border-neutral-200 inline-block" />
-                                      Müsait
-                                    </span>
-                                    <span className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                                      <span className="w-3 h-3 rounded-md bg-neutral-50 border border-neutral-100 inline-block" />
-                                      Dolu
-                                    </span>
-                                    <span className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                                      <span className="w-3 h-3 rounded-md bg-neutral-900 inline-block" />
-                                      Seçili
-                                    </span>
-                                  </div>
-                                </motion.div>
-                              ) : (
-                                <motion.div
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  className="flex flex-col items-center gap-2 py-6 text-neutral-300"
-                                >
-                                  <CalendarDays size={24} className="opacity-40" />
-                                  <p className="text-xs text-neutral-400">Yukarıdan bir tarih seçin</p>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        </SlideStep>
-                      )}
-
-                      {/* ── STEP: FORM ── */}
-                      {currentStepType === "info" && (
-                        <SlideStep key="inf" dir={direction}>
-                          {submitMessage?.type === "success" ? (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.93 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                              className="text-center py-8 space-y-5"
-                            >
-                              <motion.div
-                                initial={{ scale: 0, rotate: -20 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                transition={{ delay: 0.1, type: "spring", stiffness: 220, damping: 14 }}
-                                className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mx-auto shadow-lg"
-                              >
-                                <CheckCircle2 size={28} className="text-white" />
-                              </motion.div>
-                              <div>
-                                <h3 className="serif text-2xl text-neutral-900">Randevunuz Alındı</h3>
-                                <p className="text-neutral-500 text-sm mt-1.5">{submitMessage.text}</p>
-                              </div>
-                              <div className="bg-neutral-50 rounded-2xl border border-neutral-100 p-4 text-left space-y-3">
-                                {[
-                                  { label: "Hizmet", value: selectedService?.name },
-                                  { label: "Personel", value: selectedStaff?.name },
-                                  {
-                                    label: "Tarih",
-                                    value: selectedDate
-                                      ? new Date(selectedDate + "T12:00:00").toLocaleDateString("tr-TR", {
-                                          day: "numeric",
-                                          month: "long",
-                                          year: "numeric",
-                                        })
-                                      : "",
-                                  },
-                                  { label: "Saat", value: selectedTime ?? "" },
-                                  { label: "Tutar", value: `${selectedService?.price} ${selectedService?.currency}` },
-                                ].map(({ label, value }) => (
-                                  <div key={label} className="flex justify-between text-sm">
-                                    <span className="text-neutral-400">{label}</span>
-                                    <span className="font-semibold text-neutral-800">{value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                              <Button
-                                variant="flat"
-                                className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-xl font-medium text-sm w-full"
-                                onPress={() => window.location.reload()}
-                              >
-                                Yeni Randevu Oluştur
-                              </Button>
-                            </motion.div>
-                          ) : (
-                            <>
-                              <StepHeader icon={UserCheck} title="Bilgileriniz" subtitle="Randevuyu tamamlamak için bilgilerinizi girin" />
-                              <motion.div className="mt-4 space-y-3" variants={listVariants} initial="hidden" animate="visible">
-                                {[
-                                  { label: "Ad Soyad", key: "name", type: "text", placeholder: "Ahmet Yılmaz" },
-                                  { label: "Telefon", key: "phone", type: "tel", placeholder: "05XX XXX XX XX" },
-                                  { label: "E-posta", key: "email", type: "email", placeholder: "ornek@mail.com" },
-                                ].map(({ label, key, type, placeholder }) => (
-                                  <motion.div key={key}>
-                                    <Input
-                                      label={label}
-                                      type={type}
-                                      placeholder={placeholder}
-                                      variant="bordered"
-                                      isRequired
-                                      value={(form as any)[key]}
-                                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                                      classNames={{
-                                        label: "text-neutral-500 text-sm",
-                                        input: "text-neutral-900 text-sm placeholder:text-neutral-300",
-                                        inputWrapper: "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
-                                      }}
-                                    />
-                                  </motion.div>
-                                ))}
-                                <motion.div>
-                                  <Textarea
-                                    label="Not (opsiyonel)"
-                                    placeholder="Eklemek istediğiniz bir not..."
-                                    variant="bordered"
-                                    value={form.note}
-                                    onChange={(e) => setForm({ ...form, note: e.target.value })}
-                                    classNames={{
-                                      label: "text-neutral-500 text-sm",
-                                      input: "text-neutral-900 text-sm placeholder:text-neutral-300",
-                                      inputWrapper: "border-neutral-200 hover:border-neutral-400 focus-within:!border-neutral-900 bg-neutral-50/80 rounded-xl",
-                                    }}
-                                    minRows={2}
-                                  />
-                                </motion.div>
-                              </motion.div>
-                              <AnimatePresence>
-                                {submitMessage?.type === "error" && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="mt-3 px-4 py-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl"
-                                  >
-                                    {submitMessage.text}
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </>
-                          )}
-                        </SlideStep>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-    {/* ── BOTTOM NAV BAR (fixed, app-like) ── */ }
-            {submitMessage?.type !== "success" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="fixed bottom-0 inset-x-0 z-40 pb-safe-bottom"
-              >
-                <div className="bg-white/90 backdrop-blur-xl border-t border-neutral-200/80 px-5 py-3 shadow-lg shadow-neutral-200/50">
-                  <div className="max-w-xl mx-auto flex items-center sm:justify-between gap-3">
-                    {/* Back */}
-                    {step > 1 ? (
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => goTo(step - 1)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-100 text-neutral-600 text-sm font-medium hover:bg-neutral-200 transition-colors"
-                      >
-                        <ArrowLeft size={15} />
-                        Geri
-                      </motion.button>
-                    ) : (
-                      <div className="xs:hidden" />
-                    )}
-
-                    {/* Summary center */}
-                    {selectedService && step > 1 && (
-                      <div className="hidden sm:flex flex-col items-center text-center">
-                        <span className="text-xs font-semibold text-neutral-800">
-                          {selectedService.name}
-                        </span>
-                        <span className="text-[10px] text-neutral-400">
-                          {selectedService.price} {selectedService.currency}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Next / Submit */}
-                    {step < maxSteps ? (
-                      <motion.button
-                        whileHover={{ scale: nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime) ? 1.02 : 1 }}
-                        whileTap={{ scale: nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime) ? 0.97 : 1 }}
-                        disabled={!nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime)}
-                        onClick={() => goTo(step + 1)}
-                        className={clsx(
-                          "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
-                          nextEnabled(currentStepType, selectedCategory, selectedService, selectedStaff, selectedDate, selectedTime)
-                            ? "bg-neutral-900 text-white shadow-sm"
-                            : "bg-neutral-200 text-neutral-400 cursor-not-allowed",
-                        )}
-                      >
-                        İleri
-                        <ArrowRight size={15} />
-                      </motion.button>
-                    ) : submitMessage?.type !== "error" ? (
-                      <motion.button
-                        whileHover={{ scale: !form.name || !form.phone || !form.email || isSubmitting ? 1 : 1.02 }}
-                        whileTap={{ scale: !form.name || !form.phone || !form.email || isSubmitting ? 1 : 0.97 }}
-                        disabled={!form.name || !form.phone || !form.email || isSubmitting}
-                        onClick={handleBookAppointment}
-                        className={clsx(
-                          "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
-                          (!form.name || !form.phone || !form.email || isSubmitting)
-                            ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
-                            : "bg-neutral-900 text-white shadow-sm",
-                        )}
-                      >
-                        {isSubmitting ? (
-                          <Spinner size="sm" color="white" />
-                        ) : (
-                          <>
-                            Randevu Oluştur
-                            <CheckCircle2 size={15} />
-                          </>
-                        )}
-                      </motion.button>
-                    ) : null}
-                  </div>
-                </div>
-
-                {/* Ayarlio footer */}
-                <div className="bg-white/80 backdrop-blur-xl border-t border-neutral-100/60 py-1.5 text-center">
-                  <a
-                    href="https://ayarlio.com"
-                    className="inline-flex items-center gap-1.5 text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors"
-                  >
-                    <span className="w-3 h-px bg-neutral-300" />
-                    <span style={{ fontFamily: "'DM Serif Display', Georgia, serif" }} className="font-normal text-neutral-500">
-                      ayarlio
-                    </span>
-                    <span className="tracking-widest uppercase">tarafından sunulmaktadır</span>
-                    <span className="w-3 h-px bg-neutral-300" />
-                  </a>
-                </div>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </>
+        </div>
+      )};
     </>
   );
 }
