@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
         await connectDB();
 
-        const tenant = await Tenant.findOne({ slug: cleanSlug, isActive: true }).select('-settings.paymentGateway -createdAt -updatedAt');
+        const tenant = await Tenant.findOne({ slug: cleanSlug, isActive: true }).select('-settings.paymentGateway -createdAt -updatedAt -plan');
 
         if (!tenant) {
             return NextResponse.json(

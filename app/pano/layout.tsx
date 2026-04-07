@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useDevice } from "../providers/device-provider";
 import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
 import DashboardMobileLayout from "./layout-mobile";
+import SuspendGuard from "@/components/SuspendGuard";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -57,15 +58,17 @@ export default function DashboardLayout({
       style={{ background: "#f4f6fb", minHeight: "100vh" }}
       className="relative"
     >
-      <Sidebar
-        user={user}
-        tenant={tenantInfo}
-        appointmentsCount={data.data?.stats.totalAppointments}
-      />
+      <SuspendGuard>
+        <Sidebar
+          user={user}
+          tenant={tenantInfo}
+          appointmentsCount={data.data?.stats.totalAppointments}
+        />
 
-      <Header breadcrumb={formattedPathname} />
+        <Header breadcrumb={formattedPathname} />
 
-      <main className="pt-21 pl-68 pr-6">{children}</main>
+        <main className="pt-21 pl-68 pr-6">{children}</main>
+      </SuspendGuard>
     </div>
   );
 }
