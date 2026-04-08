@@ -22,6 +22,8 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
+import ShareQRCodeButton from "./ShareQRCodeButton";
+import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -30,12 +32,6 @@ const GROUPS = [
     group: "GENEL BAKIŞ",
     items: [
       { label: "Pano", sub: "Ana ekran", href: "/pano", icon: LayoutDashboard },
-      {
-        label: "Analitik",
-        sub: "Raporlar",
-        href: "/pano/analitik",
-        icon: BarChart2,
-      },
     ],
   },
   {
@@ -87,6 +83,12 @@ const GROUPS = [
         href: "/pano/ayarlar",
         icon: Settings,
       },
+      {
+        label: "Hesap Yönetimi",
+        sub: "Kullanıcı ve izinler",
+        href: "/pano/hesap-yonetimi",
+        icon: UserCheck,
+      }
     ],
   },
 ];
@@ -107,6 +109,15 @@ export default function Header({
   const router = useRouter();
   const pathname = usePathname();
   const [todayCount, setTodayCount] = useState<number | null>(null);
+
+  const dashData = useDashboard();
+  const tenant = dashData?.data?.tenant;
+
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
+  const protocol = rootDomain.includes("localhost") ? "http" : "https";
+  const previewUrl = tenant?.slug
+    ? `${protocol}://${tenant.slug}.${rootDomain}`
+    : "#";
 
   const { data: appointmentsRes } = useSWR(
     "/api/tenant/appointments",
@@ -221,6 +232,8 @@ export default function Header({
             <BreadcrumbItem>{breadcrumb}</BreadcrumbItem>
           </Breadcrumbs>
         </div>
+
+        <ShareQRCodeButton previewUrl={previewUrl} slug={tenant?.slug} />
 
         <Button
           onPress={() => {
